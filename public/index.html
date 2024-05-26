@@ -107,19 +107,26 @@
         <label >Expected Average </label>
         <input type="number" ng-model="expected_avg" name="number-input"><br><br>
 
-        <!-- Submit Button -->
-        <input type="submit" value="Calculate">
 
-        <h5>No of Current share = &nbsp;{{total_share_owned}}</h5>
-        <h5>Current Single Share  =  &nbsp;{{single_price}}</h5>
-        <h5 ng-model="current_total_price" style="white-space: nowrap">Avg share price paid ={{total_share_owned*single_price}}</h5>
-        <h5>Price Difference ={{single_price-ltp}}</h5>
-        <h5>Percentage Difference = &nbsp;{{((single_price-ltp)/single_price)*100}}</h5>
-        <p>Total Share = &nbsp;</p>
-        <p>Total Price Difference = &nbsp;</p>
-        <p>Total Price = &nbsp;</p>
-        <p>Total New Average &nbsp;=</p>
-        <h3>Total Share to be bought &nbsp;= &nbsp;</h3>
+        <!-- Submit Button -->
+        <input ng-click="calculate()" type="submit" value="Calculate">
+
+        <h5>No of Current share =&nbsp;{{total_share_owned}}</h5>
+        <h5>Current Single Share  =&nbsp;&#8377;{{single_price}}</h5>
+        <h5 style="white-space: nowrap"> Avg share price paid =&nbsp;&#8377; {{total_share_owned*single_price}}</h5>
+        <h5>Price Difference =&nbsp;&#8377;{{single_price-ltp}}</h5>
+        <h5>Percentage Difference = &nbsp;{{((single_price-ltp)/single_price)*100}}&#37;</h5>
+        <h5>Total Share = &nbsp;{{expected_total_share}}</h5>
+        <h5>Total Price Difference = &nbsp;&#8377;{{expected_total_share}}</h5>
+        <h5>Total Price = &nbsp;&#8377;{{expected_total_price}}</h5>
+        <h5>Total New Average price &nbsp;&#8377;={{expected_new_avg_price}}</h5>
+        <h3>Total Share to be bought &nbsp;={{total_share_to_be_bought}}</h3>
+        <label ng-model="expected_total_share" />
+        <label ng-model="expected_total_price" />
+        <label ng-model="total_share_to_be_bought" />
+        <label ng-model="expected_new_avg_price" />
+
+
       </form>
     </div>
     <p id="load">Firebase SDK Loading&hellip;</p>
@@ -149,20 +156,7 @@
         // firebase.performance(); // call to activate
         //
         // // 🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥
-        let total_share_owned = 64;
-        let current_avg_single_price = 309;
-        let ltp = 300;
-        let expected_avg = 0;
-        let current_total_price = total_share_owned * current_avg_single_price ;
-        console.log(current_total_price);
 
-        let single_price = 0;
-         let sum = 0;
-         const numbers = [1, 2, 3, 4, 5]; // An array of numbers
-        for(let i = 0; i < numbers.length; i++) {
-          sum += numbers[i];
-        }
-        const average = sum / numbers.length;
         try {
           let app = firebase.app();
           let features = [
@@ -187,8 +181,34 @@
   <script type="text/javascript">
  var app1 = angular.module('my_app', []);
  app1.controller('myCtrl', function controller($scope) {
-        $scope.add = function() {
-        $scope.sum = $scope.num1 + $scope.num2;
+        $scope.calculate = function() {
+        let total_share_owned = $scope.total_share_owned;
+        let single_price = $scope.single_price;
+        let ltp = $scope.ltp;
+        let expected_avg = $scope.expected_avg;
+        let expected_total_share =0;
+        let expected_total_price =0;
+        if(expected_avg == undefined) {
+          expected_avg =0;
+        }
+
+
+        let current_total_price = total_share_owned * single_price;
+        let temp_avg_share =0;
+        let total_share_to_be_bought =0;
+        const numbers = 999999; // An array of numbers
+        for(let i = 1; i < numbers; i++) {
+          temp_avg_share = ((i* ltp)+ current_total_price)/(i+total_share_owned);
+          if(Math.round(temp_avg_share) == ltp || (Math.round(temp_avg_share) == expected_avg)){
+          total_share_to_be_bought =i;
+          break;
+          }
+        }
+        $scope.expected_total_share = total_share_to_be_bought + total_share_owned;
+        $scope.expected_total_price = total_share_to_be_bought * temp_avg_share;
+        $scope.expected_new_avg_price = temp_avg_share;
+        $scope.total_share_to_be_bought = total_share_to_be_bought;
+        console.log(total_share_to_be_bought);
       }
   });
 </script>
