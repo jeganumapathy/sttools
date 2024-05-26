@@ -7,7 +7,11 @@
 
     <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,400,500,700&display=swap">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/css/materialize.min.css">
+    <link href="https://unpkg.com/gridjs/dist/theme/mermaid.min.css" rel="stylesheet"/>
+
     <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.6.1/angular.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://unpkg.com/gridjs/dist/gridjs.umd.js"></script>
 
     <style>
         body {
@@ -117,7 +121,7 @@
         <h5>Price Difference =&nbsp;&#8377;{{single_price-ltp}}</h5>
         <h5>Percentage Difference = &nbsp;{{((single_price-ltp)/single_price)*100}}&#37;</h5>
         <h5>Total Share = &nbsp;{{expected_total_share}}</h5>
-        <h5>Total Price Difference = &nbsp;&#8377;{{expected_total_share}}</h5>
+        <h5>Total Price Difference = &nbsp;&#8377;{{expected_total_price - (total_share_owned*single_price)}}</h5>
         <h5>Total Price =&nbsp;&#8377;{{expected_total_price}}</h5>
         <h5>Total New Average price =&nbsp;&#8377;{{expected_new_avg_price}}</h5>
         <h3>Total Share to be bought =&nbsp;{{total_share_to_be_bought}}</h3>
@@ -128,7 +132,14 @@
 
 
       </form>
+      <div id="wrapper"></div>
+
+      <div>
+        <canvas id="myChart"></canvas>
+      </div>
+
     </div>
+
     <p id="load">Firebase SDK Loading&hellip;</p>
   </div>
     <script>
@@ -182,6 +193,12 @@
  var app1 = angular.module('my_app', []);
  app1.controller('myCtrl', function controller($scope) {
         $scope.calculate = function() {
+        const ctx = document.getElementById('myChart');
+        var ctx_x = [];
+        var ctx_y = [];
+        var ctx_z = [];
+        var data = [];
+
         let total_share_owned = $scope.total_share_owned;
         let single_price = $scope.single_price;
         let ltp = $scope.ltp;
@@ -191,7 +208,6 @@
         if(expected_avg == undefined) {
           expected_avg =0;
         }
-
 
         let current_total_price = total_share_owned * single_price;
         let temp_avg_share =0;
@@ -203,12 +219,52 @@
           total_share_to_be_bought =i;
           break;
           }
+          if(i % 10 == 0) {
+          var new_data = [];
+          ctx_x.push((i));
+          ctx_y.push((i*ltp));
+          ctx_z.push(temp_avg_share);
+          new_data.push(i);
+          new_data.push((i*ltp));
+          new_data.push(temp_avg_share);
+          data.push(new_data);
+          }
         }
         $scope.expected_total_share = total_share_to_be_bought + total_share_owned;
         $scope.expected_total_price = total_share_to_be_bought * temp_avg_share;
         $scope.expected_new_avg_price = temp_avg_share;
         $scope.total_share_to_be_bought = total_share_to_be_bought;
         console.log(total_share_to_be_bought);
+
+        // new table
+      var grid_js = new gridjs.Grid({
+  columns: ["No of Share", "Price", "Average"],
+    pagination: true,
+  data: data
+}).render(document.getElementById("wrapper"));
+grid_js.forceRender();
+
+
+        //draw chart
+        myChart =  new Chart(ctx, {type: 'bar',data: {
+          labels: ctx_y,
+          datasets: [{
+            label: '# of Share',
+            data: ctx_x,
+            borderWidth: .01
+          }]
+        },
+        options: {
+          scales: {
+            y: {
+              beginAtZero: true
+            }
+          }
+        }
+      });
+        myChart.update();
+
+
       }
   });
 </script>
