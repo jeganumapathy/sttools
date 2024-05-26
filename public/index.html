@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html>
+<html ng-app="my_app">
   <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -7,6 +7,7 @@
 
     <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,400,500,700&display=swap">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/css/materialize.min.css">
+    <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.6.1/angular.min.js"></script>
 
     <style>
         body {
@@ -86,26 +87,45 @@
   </head>
   <body>
 
-  <h2>Welcome  </h2>
+  <h2>Welcome To Calculator </h2>
 
 
-  </div>
+  <div ng-controller="myCtrl">
     <div id="message">
       <form>
         <!-- Text Input Field -->
-        <label for="number-input_0">Number Input:</label>
-        <input type="number" id="number-input_0" name="number-input"><br><br>
+        <label>Enter Total Share Owned:</label>
+        <input type="number" ng-model="total_share_owned" name="number-input"><br><br>
         <!-- Number Input Field -->
-        <label for="number-input_1">Number Input:</label>
-        <input type="number" id="number-input_1" name="number-input"><br><br>
+        <label >Enter Avg Single Price:</label>
+        <input type="number" ng-model="single_price" name="number-input"><br><br>
+        <!-- Number Input Field -->
+        <label >LTP:</label>
+        <input type="number" ng-model="ltp" name="number-input"><br><br>
+
+        <!-- Expected Average Field -->
+        <label >Expected Average </label>
+        <input type="number" ng-model="expected_avg" name="number-input"><br><br>
 
         <!-- Submit Button -->
-        <input type="submit" value="Submit">
+        <input type="submit" value="Calculate">
+
+        <h5>No of Current share = &nbsp;{{total_share_owned}}</h5>
+        <h5>Current Single Share  =  &nbsp;{{single_price}}</h5>
+        <h5 ng-model="current_total_price" style="white-space: nowrap">Avg share price paid ={{total_share_owned*single_price}}</h5>
+        <h5>Price Difference ={{single_price-ltp}}</h5>
+        <h5>Percentage Difference = &nbsp;{{((single_price-ltp)/single_price)*100}}</h5>
+        <p>Total Share = &nbsp;</p>
+        <p>Total Price Difference = &nbsp;</p>
+        <p>Total Price = &nbsp;</p>
+        <p>Total New Average &nbsp;=</p>
+        <h3>Total Share to be bought &nbsp;= &nbsp;</h3>
       </form>
     </div>
     <p id="load">Firebase SDK Loading&hellip;</p>
-
+  </div>
     <script>
+
       document.addEventListener('DOMContentLoaded', function() {
         const loadEl = document.querySelector('#load');
         // // 🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥
@@ -129,7 +149,20 @@
         // firebase.performance(); // call to activate
         //
         // // 🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥
+        let total_share_owned = 64;
+        let current_avg_single_price = 309;
+        let ltp = 300;
+        let expected_avg = 0;
+        let current_total_price = total_share_owned * current_avg_single_price ;
+        console.log(current_total_price);
 
+        let single_price = 0;
+         let sum = 0;
+         const numbers = [1, 2, 3, 4, 5]; // An array of numbers
+        for(let i = 0; i < numbers.length; i++) {
+          sum += numbers[i];
+        }
+        const average = sum / numbers.length;
         try {
           let app = firebase.app();
           let features = [
@@ -150,5 +183,15 @@
         }
       });
     </script>
+
+  <script type="text/javascript">
+ var app1 = angular.module('my_app', []);
+ app1.controller('myCtrl', function controller($scope) {
+        $scope.add = function() {
+        $scope.sum = $scope.num1 + $scope.num2;
+      }
+  });
+</script>
+
   </body>
 </html>
