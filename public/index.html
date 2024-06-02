@@ -110,28 +110,23 @@
         <!-- Expected Average Field -->
         <label >Expected Average </label>
         <input type="number" ng-model="expected_avg" name="number-input"><br><br>
-
-
         <!-- Submit Button -->
         <input ng-click="calculate()" type="submit" value="Calculate">
-
-        <h5>No of Current share =&nbsp;{{total_share_owned}}</h5>
-        <h5>Current Single Share  =&nbsp;&#8377;{{single_price}}</h5>
-        <h5 style="white-space: nowrap"> Avg share price paid =&nbsp;&#8377; {{total_share_owned*single_price}}</h5>
-        <h5>Price Difference =&nbsp;&#8377;{{single_price-ltp}}</h5>
-        <h5>Percentage Difference = &nbsp;{{((single_price-ltp)/single_price)*100}}&#37;</h5>
-        <h5>Total Share = &nbsp;{{expected_total_share}}</h5>
-        <h5>Total Price Difference = &nbsp;&#8377;{{expected_total_price - (total_share_owned*single_price)}}</h5>
-        <h5>Total Price =&nbsp;&#8377;{{expected_total_price}}</h5>
-        <h5>Total New Average price =&nbsp;&#8377;{{expected_new_avg_price}}</h5>
-        <h3>Total Share to be bought =&nbsp;{{total_share_to_be_bought}}</h3>
-        <label ng-model="expected_total_share" />
-        <label ng-model="expected_total_price" />
-        <label ng-model="total_share_to_be_bought" />
-        <label ng-model="expected_new_avg_price" />
-
-
       </form>
+      <h5>No of Current share =&nbsp;{{total_share_owned}}</h5>
+      <h5>Current Single Share  =&nbsp;&#8377;{{single_price}}</h5>
+      <h5 style="white-space: nowrap"> Avg share price paid =&nbsp;&#8377; {{total_share_owned*single_price}}</h5>
+      <h5>Price Difference =&nbsp;&#8377;{{single_price-ltp}}</h5>
+      <h5>Percentage Difference = &nbsp;{{((single_price-ltp)/single_price)*100}}&#37;</h5>
+      <h5>Total Share = &nbsp;{{expected_total_share}}</h5>
+      <h5>Total Price Difference = &nbsp;&#8377;{{expected_total_price - (total_share_owned*single_price)}}</h5>
+      <h5>Total Price =&nbsp;&#8377;{{expected_total_price}}</h5>
+      <h5>Total New Average price =&nbsp;&#8377;{{expected_new_avg_price}}</h5>
+      <h3>Total Share to be bought =&nbsp;{{total_share_to_be_bought}}</h3>
+      <label ng-model="expected_total_share" />
+      <label ng-model="expected_total_price" />
+      <label ng-model="total_share_to_be_bought" />
+      <label ng-model="expected_new_avg_price" />
       <div id="wrapper"></div>
 
       <div>
@@ -167,6 +162,16 @@
         // firebase.performance(); // call to activate
         //
         // // 🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥
+const dbRef = firebase.database().ref();
+dbRef.child("sm_data").get().then((snapshot) => {
+  if (snapshot.exists()) {
+    console.log(snapshot.val());
+  } else {
+    console.log("No data available");
+  }
+}).catch((error) => {
+  console.error(error);
+});
 
         try {
           let app = firebase.app();
@@ -227,6 +232,9 @@
           new_data.push(i);
           new_data.push((i*ltp));
           new_data.push(temp_avg_share);
+          new_data.push(i+total_share_owned);
+          new_data.push((i+total_share_owned)*temp_avg_share);
+
           data.push(new_data);
           }
         }
@@ -238,12 +246,13 @@
 
         // new table
       var grid_js = new gridjs.Grid({
-  columns: ["No of Share", "Price", "Average"],
+  columns: ["No of Share", "Price", "Average","Total share Owned","Total share Price"],
     pagination: true,
   data: data
 }).render(document.getElementById("wrapper"));
-grid_js.forceRender();
-
+  grid.updateConfig({
+       data: data
+      }).forceRender();
 
         //draw chart
         myChart =  new Chart(ctx, {type: 'bar',data: {
