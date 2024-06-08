@@ -15,6 +15,9 @@ export default function SamplePage() {
         reprehended in voltage veil esse colum doolie eu fujian bulla parian. Exceptive sin ocean cuspidate non president, sunk in culpa qui
         officiate descent molls anim id est labours.
       </Typography>
+
+<a href="/tools.html">Link to google</a>
+
     </MainCard>
   );
 }
