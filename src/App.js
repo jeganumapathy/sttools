@@ -1,23 +1,30 @@
-import logo from './logo.svg';
+import React, { useState, useEffect } from 'react';
+import StockList from './components/StockList';
+import StockInfo from './components/StockInfo';
+import StockChart from './components/StockChart';
+import { fetchStockList } from './services/stockService';
 import './App.css';
 
 function App() {
+  const [selectedStock, setSelectedStock] = useState(null);
+  const [stocks, setStocks] = useState([]);
+
+  useEffect(() => {
+    fetchStockList().then(data => setStocks(data));
+  }, []);
+
+  const handleStockSelect = (symbol) => {
+    setSelectedStock(symbol);
+  };
+
   return (
     <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.js</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
+      <h1>Stock Market Dashboard</h1>
+      <div className="dashboard">
+        <StockList stocks={stocks} onStockSelect={handleStockSelect} />
+        {selectedStock && <StockInfo symbol={selectedStock} />}
+        {selectedStock && <StockChart symbol={selectedStock} />}
+      </div>
     </div>
   );
 }
