@@ -1,282 +1,43 @@
 <!DOCTYPE html>
-<html ng-app="my_app">
+<html lang="en">
   <head>
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>StockMarket Tools</title>
-
-    <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,400,500,700&display=swap">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/css/materialize.min.css">
-    <link href="https://unpkg.com/gridjs/dist/theme/mermaid.min.css" rel="stylesheet"/>
-
-    <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.6.1/angular.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <script src="https://unpkg.com/gridjs/dist/gridjs.umd.js"></script>
-
-    <style>
-        body {
-            font-family: Arial, sans-serif;
-            background-color: #f4f4f4;
-            padding: 20px;
-        }
-
-        form {
-            background-color: #fff;
-            padding: 20px;
-            border-radius: 5px;
-            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
-        }
-
-        label {
-            display: block;
-            margin-bottom: 5px;
-        }
-
-        input[type="text"] {
-            width: 100%;
-            padding: 10px;
-            margin-bottom: 15px;
-            border: 1px solid #ccc;
-            border-radius: 4px;
-            box-sizing: border-box;
-        }
-
-        input[type="submit"] {
-            background-color: #4CAF50;
-            color: white;
-            padding: 10px 20px;
-            border: none;
-            border-radius: 4px;
-            cursor: pointer;
-            font-size: 16px;
-        }
-
-        input[type="submit"]:hover {
-            background-color: #45a049;
-        }
-    </style>
-
-    <!-- update the version number as needed -->
-    <script defer src="/__/firebase/10.12.1/firebase-app-compat.js"></script>
-    <!-- include only the Firebase features as you need -->
-    <script defer src="/__/firebase/10.12.1/firebase-auth-compat.js"></script>
-    <script defer src="/__/firebase/10.12.1/firebase-database-compat.js"></script>
-    <script defer src="/__/firebase/10.12.1/firebase-firestore-compat.js"></script>
-    <script defer src="/__/firebase/10.12.1/firebase-functions-compat.js"></script>
-    <script defer src="/__/firebase/10.12.1/firebase-messaging-compat.js"></script>
-    <script defer src="/__/firebase/10.12.1/firebase-storage-compat.js"></script>
-    <script defer src="/__/firebase/10.12.1/firebase-analytics-compat.js"></script>
-    <script defer src="/__/firebase/10.12.1/firebase-remote-config-compat.js"></script>
-    <script defer src="/__/firebase/10.12.1/firebase-performance-compat.js"></script>
-    <!-- 
-      initialize the SDK after all desired features are loaded, set useEmulator to false
-      to avoid connecting the SDK to running emulators.
+    <meta charset="utf-8" />
+    <link rel="icon" href="%PUBLIC_URL%/favicon.ico" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="theme-color" content="#000000" />
+    <meta
+      name="description"
+      content="Web site created using create-react-app"
+    />
+    <link rel="apple-touch-icon" href="%PUBLIC_URL%/logo192.png" />
+    <!--
+      manifest.json provides metadata used when your web app is installed on a
+      user's mobile device or desktop. See https://developers.google.com/web/fundamentals/web-app-manifest/
     -->
-    <script defer src="/__/firebase/init.js?useEmulator=true"></script>
+    <link rel="manifest" href="%PUBLIC_URL%/manifest.json" />
+    <!--
+      Notice the use of %PUBLIC_URL% in the tags above.
+      It will be replaced with the URL of the `public` folder during the build.
+      Only files inside the `public` folder can be referenced from the HTML.
 
-    <style media="screen">
-      body { background: #ECEFF1; color: rgba(0,0,0,0.87); font-family: Roboto, Helvetica, Arial, sans-serif; margin: 0; padding: 0; }
-      #message { background: white; max-width: 1600px; margin: 50px auto 16px; padding: 32px 24px; border-radius: 3px; }
-      #message h2 { color: #ffa100; font-weight: bold; font-size: 16px; margin: 0 0 8px; }
-      #message h1 { font-size: 22px; font-weight: 300; color: rgba(0,0,0,0.6); margin: 0 0 16px;}
-      #message p { line-height: 140%; margin: 16px 0 24px; font-size: 14px; }
-      #message a { display: block; text-align: center; background: #039be5; text-transform: uppercase; text-decoration: none; color: white; padding: 16px; border-radius: 4px; }
-      #message, #message a { box-shadow: 0 1px 3px rgba(0,0,0,0.12), 0 1px 2px rgba(0,0,0,0.24); }
-      #load { color: rgba(0,0,0,0.4); text-align: center; font-size: 13px; }
-      @media (max-width: 600px) {
-        body, #message { margin-top: 0; background: white; box-shadow: none; }
-        body { border-top: 16px solid #ffa100; }
-      }
-    </style>
+      Unlike "/favicon.ico" or "favicon.ico", "%PUBLIC_URL%/favicon.ico" will
+      work correctly both with client-side routing and a non-root public URL.
+      Learn how to configure a non-root public URL by running `npm run build`.
+    -->
+    <title>React App</title>
   </head>
   <body>
+    <noscript>You need to enable JavaScript to run this app.</noscript>
+    <div id="root"></div>
+    <!--
+      This HTML file is a template.
+      If you open it directly in the browser, you will see an empty page.
 
-  <h2>Welcome To Calculator </h2>
+      You can add webfonts, meta tags, or analytics to this file.
+      The build step will place the bundled scripts into the <body> tag.
 
-
-  <div ng-controller="myCtrl">
-    <div id="message">
-      <form>
-        <!-- Text Input Field -->
-        <label>Enter Total Share Owned:</label>
-        <input type="number" ng-model="total_share_owned" name="number-input"><br><br>
-        <!-- Number Input Field -->
-        <label >Enter Avg Single Price:</label>
-        <input type="number" ng-model="single_price" name="number-input"><br><br>
-        <!-- Number Input Field -->
-        <label >LTP:</label>
-        <input type="number" ng-model="ltp" name="number-input"><br><br>
-
-        <!-- Expected Average Field -->
-        <label >Expected Average </label>
-        <input type="number" ng-model="expected_avg" name="number-input"><br><br>
-        <!-- Submit Button -->
-        <input ng-click="calculate()" type="submit" value="Calculate">
-      </form>
-      <h5>No of Current share =&nbsp;{{total_share_owned}}</h5>
-      <h5>Current Single Share  =&nbsp;&#8377;{{single_price}}</h5>
-      <h5 style="white-space: nowrap"> Avg share price paid =&nbsp;&#8377; {{total_share_owned*single_price}}</h5>
-      <h5>Price Difference =&nbsp;&#8377;{{single_price-ltp}}</h5>
-      <h5>Percentage Difference = &nbsp;{{((single_price-ltp)/single_price)*100}}&#37;</h5>
-      <h5>Total Share = &nbsp;{{expected_total_share}}</h5>
-      <h5>Total Price Difference = &nbsp;&#8377;{{expected_total_price - (total_share_owned*single_price)}}</h5>
-      <h5>Total Price =&nbsp;&#8377;{{expected_total_price}}</h5>
-      <h5>Total New Average price =&nbsp;&#8377;{{expected_new_avg_price}}</h5>
-      <h3>Total Share to be bought =&nbsp;{{total_share_to_be_bought}}</h3>
-      <label ng-model="expected_total_share" />
-      <label ng-model="expected_total_price" />
-      <label ng-model="total_share_to_be_bought" />
-      <label ng-model="expected_new_avg_price" />
-      <div id="wrapper"></div>
-
-      <div>
-        <canvas id="myChart"></canvas>
-      </div>
-
-    </div>
-
-    <p id="load">Firebase SDK Loading&hellip;</p>
-  </div>
-    <script>
-
-      document.addEventListener('DOMContentLoaded', function() {
-        const loadEl = document.querySelector('#load');
-        // // 🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥
-        // // The Firebase SDK is initialized and available here!
-        //
-         firebase.auth().onAuthStateChanged(user => {
-          if (user) {
-            // User is signed in.
-            console.log('User signed in:', user);
-          } else {
-            // No user is signed in.
-            console.log('No user is signed in:');
-          }});
-        // firebase.database().ref('/path/to/ref').on('value', snapshot => { });
-        // firebase.firestore().doc('/foo/bar').get().then(() => { });
-        // firebase.functions().httpsCallable('yourFunction')().then(() => { });
-        // firebase.messaging().requestPermission().then(() => { });
-        // firebase.storage().ref('/path/to/ref').getDownloadURL().then(() => { });
-        // firebase.analytics(); // call to activate
-        // firebase.analytics().logEvent('tutorial_completed');
-        // firebase.performance(); // call to activate
-        //
-        // // 🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥
-const dbRef = firebase.database().ref();
-dbRef.child("sm_data").get().then((snapshot) => {
-  if (snapshot.exists()) {
-    console.log(snapshot.val());
-  } else {
-    console.log("No data available");
-  }
-}).catch((error) => {
-  console.error(error);
-});
-
-        try {
-          let app = firebase.app();
-          let features = [
-            'auth', 
-            'database', 
-            'firestore',
-            'functions',
-            'messaging', 
-            'storage', 
-            'analytics', 
-            'remoteConfig',
-            'performance',
-          ].filter(feature => typeof app[feature] === 'function');
-          loadEl.textContent = `Firebase SDK loaded with ${features.join(', ')}`;
-        } catch (e) {
-          console.error(e);
-          loadEl.textContent = 'Error loading the Firebase SDK, check the console.';
-        }
-      });
-    </script>
-
-  <script type="text/javascript">
- var app1 = angular.module('my_app', []);
- app1.controller('myCtrl', function controller($scope) {
-        $scope.calculate = function() {
-        const ctx = document.getElementById('myChart');
-        var ctx_x = [];
-        var ctx_y = [];
-        var ctx_z = [];
-        var data = [];
-
-        let total_share_owned = $scope.total_share_owned;
-        let single_price = $scope.single_price;
-        let ltp = $scope.ltp;
-        let expected_avg = $scope.expected_avg;
-        let expected_total_share =0;
-        let expected_total_price =0;
-        if(expected_avg == undefined) {
-          expected_avg =0;
-        }
-
-        let current_total_price = total_share_owned * single_price;
-        let temp_avg_share =0;
-        let total_share_to_be_bought =0;
-        const numbers = 999999; // An array of numbers
-        for(let i = 1; i < numbers; i++) {
-          temp_avg_share = ((i* ltp)+ current_total_price)/(i+total_share_owned);
-          if(Math.round(temp_avg_share) == ltp || (Math.round(temp_avg_share) == expected_avg)){
-          total_share_to_be_bought =i;
-          break;
-          }
-          if(i % 10 == 0) {
-          var new_data = [];
-          ctx_x.push((i));
-          ctx_y.push((i*ltp));
-          ctx_z.push(temp_avg_share);
-          new_data.push(i);
-          new_data.push((i*ltp));
-          new_data.push(temp_avg_share);
-          new_data.push(i+total_share_owned);
-          new_data.push((i+total_share_owned)*temp_avg_share);
-
-          data.push(new_data);
-          }
-        }
-        $scope.expected_total_share = total_share_to_be_bought + total_share_owned;
-        $scope.expected_total_price = total_share_to_be_bought * temp_avg_share;
-        $scope.expected_new_avg_price = temp_avg_share;
-        $scope.total_share_to_be_bought = total_share_to_be_bought;
-        console.log(total_share_to_be_bought);
-
-        // new table
-      var grid_js = new gridjs.Grid({
-  columns: ["No of Share", "Price", "Average","Total share Owned","Total share Price"],
-    pagination: true,
-  data: data
-}).render(document.getElementById("wrapper"));
-  grid.updateConfig({
-       data: data
-      }).forceRender();
-
-        //draw chart
-        myChart =  new Chart(ctx, {type: 'bar',data: {
-          labels: ctx_y,
-          datasets: [{
-            label: '# of Share',
-            data: ctx_x,
-            borderWidth: .01
-          }]
-        },
-        options: {
-          scales: {
-            y: {
-              beginAtZero: true
-            }
-          }
-        }
-      });
-        myChart.update();
-
-
-      }
-  });
-</script>
-
+      To begin the development, run `npm start` or `yarn start`.
+      To create a production bundle, use `npm run build` or `yarn build`.
+    -->
   </body>
 </html>
