@@ -3,6 +3,7 @@ import { RouterProvider } from 'react-router-dom';
 // project import
 import router from 'routes';
 import ThemeCustomization from 'themes';
+import { db } from 'utils/firebase';
 
 import ScrollTop from 'components/ScrollTop';
 
