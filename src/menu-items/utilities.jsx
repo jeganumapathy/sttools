@@ -5,7 +5,9 @@ import {
   BarcodeOutlined,
   BgColorsOutlined,
   FontSizeOutlined,
-  LoadingOutlined
+  LoadingOutlined,
+  PlusOutlined,
+  MinusOutlined
 } from '@ant-design/icons';
 
 // icons
@@ -15,7 +17,9 @@ const icons = {
   BarcodeOutlined,
   AntDesignOutlined,
   LoadingOutlined,
-  AppstoreAddOutlined
+  AppstoreAddOutlined,
+  MinusOutlined,
+  PlusOutlined
 };
 
 // ==============================|| MENU ITEMS - UTILITIES ||============================== //
@@ -45,6 +49,20 @@ const utilities = {
       type: 'item',
       url: '/shadow',
       icon: icons.BarcodeOutlined
+    },
+    {
+      id: 'util-add',
+      title: 'Add Stock',
+      type: 'item',
+      url: '/add_stock',
+      icon: icons.PlusOutlined
+    },
+    {
+      id: 'util-remove',
+      title: 'Remove Stock',
+      type: 'item',
+      url: '/remove_stock',
+      icon: icons.MinusOutlined
     }
   ]
 };
