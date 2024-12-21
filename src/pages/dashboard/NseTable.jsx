@@ -97,8 +97,8 @@ function NseTable() {
           <TableBody>
             {stockData.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage).map((row, index) => (
               <TableRow key={index}>
-                <TableCell align="left">SYMBOL {row['SYMBOL\n']}</TableCell>
-                <TableCell align="right">OPEN {row['OPEN\n']}</TableCell>
+                <TableCell align="left">{row['SYMBOL\n']}</TableCell>
+                <TableCell align="right">{row['OPEN\n']}</TableCell>
                 <TableCell align="right">{row['HIGH\n']}</TableCell>
                 <TableCell align="right">{row['LOW\n']}</TableCell>
                 <TableCell align="right">{row['PREV\n. CLOSE']}</TableCell>
