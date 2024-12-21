@@ -20,6 +20,7 @@ import ReportAreaChart from './ReportAreaChart';
 import UniqueVisitorCard from './UniqueVisitorCard';
 import SaleReportCard from './SaleReportCard';
 import OrdersTable from './OrdersTable';
+import NseTable from './NseTable';
 
 // assets
 import GiftOutlined from '@ant-design/icons/GiftOutlined';
@@ -104,7 +105,7 @@ export default function DashboardDefault() {
           <Grid item />
         </Grid>
         <MainCard sx={{ mt: 2 }} content={false}>
-          <OrdersTable />
+          <NseTable />
         </MainCard>
       </Grid>
       <Grid item xs={12} md={5} lg={4}>
