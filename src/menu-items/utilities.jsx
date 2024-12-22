@@ -38,14 +38,14 @@ const utilities = {
     },
     {
       id: 'util-color',
-      title: 'Color',
+      title: 'Newsletter',
       type: 'item',
       url: '/color',
       icon: icons.BgColorsOutlined
     },
     {
       id: 'util-shadow',
-      title: 'Shadow',
+      title: 'Books',
       type: 'item',
       url: '/shadow',
       icon: icons.BarcodeOutlined
