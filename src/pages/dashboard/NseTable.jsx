@@ -9,6 +9,7 @@ import TableRow from '@mui/material/TableRow';
 import Box from '@mui/material/Box';
 import Papa from 'papaparse';
 import TablePagination from '@mui/material/TablePagination';
+import TextField from '@mui/material/TextField';
 
 function NseTableHead({ order, orderBy }) {
   const headCells = [
@@ -27,7 +28,6 @@ function NseTableHead({ order, orderBy }) {
     { id: 'fiftyTwoWL', align: 'right', disablePadding: false, label: '52W L' },
     { id: 'thirtyDPercentChng', align: 'right', disablePadding: false, label: '30 D %CHNG' },
     { id: 'threeSixtyFiveDPercentChng', align: 'right', disablePadding: false, label: '365 D % CHNG' },
-    { id: 'date', align: 'right', disablePadding: false, label: '21-Dec-2023' }
   ];
 
   return (
@@ -51,6 +51,7 @@ function NseTable() {
   const [stockData, setStockData] = useState([]);
     const [page, setPage] = useState(0);
     const [rowsPerPage, setRowsPerPage] = useState(10);
+  const [searchQuery, setSearchQuery] = useState('');
 
   const order = 'asc';
   const orderBy = 'symbol';
@@ -72,6 +73,10 @@ function NseTable() {
       .catch(error => console.error('Error fetching data:', error));
   }, []);
 
+    const handleSearchChange = (event) => {
+      setSearchQuery(event.target.value);
+    };
+
   const handleChangePage = (event, newPage) => {
     setPage(newPage);
   };
@@ -80,8 +85,21 @@ function NseTable() {
     setRowsPerPage(parseInt(event.target.value, 10));
     setPage(0);
   };
+    const filteredData = stockData.filter(row =>
+      Object.values(row).some(value =>
+        value.toString().toLowerCase().includes(searchQuery.toLowerCase())
+      )
+    );
   return (
     <Box>
+      <TextField
+              label="Search"
+              variant="outlined"
+              fullWidth
+              margin="normal"
+              value={searchQuery}
+              onChange={handleSearchChange}
+            />
       <TableContainer
         sx={{
           width: '100%',
@@ -95,7 +113,7 @@ function NseTable() {
         <Table aria-labelledby="tableTitle">
           <NseTableHead order={order} orderBy={orderBy} />
           <TableBody>
-            {stockData.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage).map((row, index) => (
+            {filteredData.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage).map((row, index) => (
               <TableRow key={index}>
                 <TableCell align="left">{row['SYMBOL\n']}</TableCell>
                 <TableCell align="right">{row['OPEN\n']}</TableCell>
