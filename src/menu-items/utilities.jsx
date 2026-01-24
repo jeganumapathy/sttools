@@ -7,7 +7,8 @@ import {
   FontSizeOutlined,
   LoadingOutlined,
   PlusOutlined,
-  MinusOutlined
+  MinusOutlined,
+  CalculatorOutlined
 } from '@ant-design/icons';
 
 // icons
@@ -19,7 +20,8 @@ const icons = {
   LoadingOutlined,
   AppstoreAddOutlined,
   MinusOutlined,
-  PlusOutlined
+  PlusOutlined,
+  CalculatorOutlined
 };
 
 // ==============================|| MENU ITEMS - UTILITIES ||============================== //
@@ -56,6 +58,13 @@ const utilities = {
       type: 'item',
       url: '/add_stock',
       icon: icons.PlusOutlined
+    },
+    {
+      id: 'util-calculator',
+      title: 'Stock Calculator',
+      type: 'item',
+      url: '/stock_calculator',
+      icon: icons.CalculatorOutlined
     },
     {
       id: 'util-remove',

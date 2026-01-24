@@ -7,6 +7,7 @@ import Dashboard from 'layout/Dashboard';
 const Color = Loadable(lazy(() => import('pages/component-overview/color')));
 const Typography = Loadable(lazy(() => import('pages/component-overview/typography')));
 const AddStock = Loadable(lazy(() => import('pages/component-overview/addstock')));
+const StockCalculator = Loadable(lazy(() => import('pages/component-overview/stock-calculator')));
 const Shadow = Loadable(lazy(() => import('pages/component-overview/shadows')));
 const DashboardDefault = Loadable(lazy(() => import('pages/dashboard/index')));
 
@@ -51,6 +52,10 @@ const MainRoutes = {
     {
       path: 'add_stock',
       element: <AddStock />
+    },
+    {
+      path: 'stock_calculator',
+      element: <StockCalculator />
     },
     {
       path: 'remove_stock',
