@@ -6,8 +6,26 @@ import Link from '@mui/material/Link';
 import Stack from '@mui/material/Stack';
 import Typography from '@mui/material/Typography';
 import { TextField, Button, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper } from '@mui/material';
+import {
+  Chart as ChartJS,
+  CategoryScale,
+  LinearScale,
+  BarElement,
+  Title,
+  Tooltip,
+  Legend,
+} from 'chart.js';
 import { Bar } from 'react-chartjs-2';
 import React, { useState } from 'react';
+
+ChartJS.register(
+  CategoryScale,
+  LinearScale,
+  BarElement,
+  Title,
+  Tooltip,
+  Legend
+);
 
 // project import
 import MainCard from 'components/MainCard';
@@ -218,5 +236,4 @@ export default function ComponentStockCalculator() {
       </MainCard>
     </ComponentSkeleton>
   );
-}</content>
-<parameter name="filePath">e:\work\sttools\src\pages\component-overview\stock-calculator.jsx
+}
