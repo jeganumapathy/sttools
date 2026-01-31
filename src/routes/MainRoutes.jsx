@@ -8,6 +8,7 @@ const Color = Loadable(lazy(() => import('pages/component-overview/color')));
 const Typography = Loadable(lazy(() => import('pages/component-overview/typography')));
 const AddStock = Loadable(lazy(() => import('pages/component-overview/addstock')));
 const StockCalculator = Loadable(lazy(() => import('pages/component-overview/stock-calculator')));
+const MarketTicker = Loadable(lazy(() => import('pages/component-overview/market-ticker')));
 const Shadow = Loadable(lazy(() => import('pages/component-overview/shadows')));
 const DashboardDefault = Loadable(lazy(() => import('pages/dashboard/index')));
 
@@ -56,6 +57,10 @@ const MainRoutes = {
     {
       path: 'stock_calculator',
       element: <StockCalculator />
+    },
+    {
+      path: 'market-ticker',
+      element: <MarketTicker />
     },
     {
       path: 'remove_stock',
