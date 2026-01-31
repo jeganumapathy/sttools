@@ -113,20 +113,17 @@
         <!-- Submit Button -->
         <input ng-click="calculate()" type="submit" value="Calculate">
       </form>
-      <h5>No of Current share =&nbsp;{{total_share_owned}}</h5>
-      <h5>Current Single Share  =&nbsp;&#8377;{{single_price}}</h5>
-      <h5 style="white-space: nowrap"> Avg share price paid =&nbsp;&#8377; {{total_share_owned*single_price}}</h5>
-      <h5>Price Difference =&nbsp;&#8377;{{single_price-ltp}}</h5>
-      <h5>Percentage Difference = &nbsp;{{((single_price-ltp)/single_price)*100}}&#37;</h5>
-      <h5>Total Share = &nbsp;{{expected_total_share}}</h5>
-      <h5>Total Price Difference = &nbsp;&#8377;{{expected_total_price - (total_share_owned*single_price)}}</h5>
-      <h5>Total Price =&nbsp;&#8377;{{expected_total_price}}</h5>
-      <h5>Total New Average price =&nbsp;&#8377;{{expected_new_avg_price}}</h5>
-      <h3>Total Share to be bought =&nbsp;{{total_share_to_be_bought}}</h3>
-      <label ng-model="expected_total_share" />
-      <label ng-model="expected_total_price" />
-      <label ng-model="total_share_to_be_bought" />
-      <label ng-model="expected_new_avg_price" />
+      <h5>No of Current shares = {{total_share_owned}}</h5>
+      <h5>Current Single Share = &#8377;{{single_price}}</h5>
+      <h5 style="white-space: nowrap">Avg share price paid = &#8377;{{(total_share_owned * single_price).toFixed(2)}}</h5>
+      <h5>Price Difference = &#8377;{{(single_price - ltp).toFixed(2)}}</h5>
+      <h5>Percentage Difference = {{(((single_price - ltp) / single_price) * 100).toFixed(2)}}%</h5>
+      <h5>Total Shares = {{expected_total_share}}</h5>
+      <h5>Total Price Difference = &#8377;{{(expected_total_price - (total_share_owned * single_price)).toFixed(2)}}</h5>
+      <h5>Total Price = &#8377;{{expected_total_price}}</h5>
+      <h5>Total New Average Price = &#8377;{{expected_new_avg_price}}</h5>
+      <h3>Total Shares to be Bought = {{total_share_to_be_bought}}</h3>
+
       <div id="wrapper"></div>
 
       <div>
@@ -194,89 +191,112 @@ dbRef.child("sm_data").get().then((snapshot) => {
       });
     </script>
 
-  <script type="text/javascript">
- var app1 = angular.module('my_app', []);
- app1.controller('myCtrl', function controller($scope) {
+    <script type="text/javascript">
+      var app1 = angular.module('my_app', []);
+      app1.controller('myCtrl', function controller($scope) {
         $scope.calculate = function() {
-        const ctx = document.getElementById('myChart');
-        var ctx_x = [];
-        var ctx_y = [];
-        var ctx_z = [];
-        var data = [];
-
-        let total_share_owned = $scope.total_share_owned;
-        let single_price = $scope.single_price;
-        let ltp = $scope.ltp;
-        let expected_avg = $scope.expected_avg;
-        let expected_total_share =0;
-        let expected_total_price =0;
-        if(expected_avg == undefined) {
-          expected_avg =0;
-        }
-
-        let current_total_price = total_share_owned * single_price;
-        let temp_avg_share =0;
-        let total_share_to_be_bought =0;
-        const numbers = 999999; // An array of numbers
-        for(let i = 1; i < numbers; i++) {
-          temp_avg_share = ((i* ltp)+ current_total_price)/(i+total_share_owned);
-          if(Math.round(temp_avg_share) == ltp || (Math.round(temp_avg_share) == expected_avg)){
-          total_share_to_be_bought =i;
-          break;
+          // Input validation
+          if (!$scope.total_share_owned || !$scope.single_price || !$scope.ltp) {
+            alert('Please fill in Total Shares Owned, Avg Single Price, and LTP.');
+            return;
           }
-          if(i % 10 == 0) {
-          var new_data = [];
-          ctx_x.push((i));
-          ctx_y.push((i*ltp));
-          ctx_z.push(temp_avg_share);
-          new_data.push(i);
-          new_data.push((i*ltp));
-          new_data.push(temp_avg_share);
-          new_data.push(i+total_share_owned);
-          new_data.push((i+total_share_owned)*temp_avg_share);
-
-          data.push(new_data);
+          if ($scope.total_share_owned <= 0 || $scope.single_price <= 0 || $scope.ltp <= 0) {
+            alert('All values must be positive numbers.');
+            return;
           }
-        }
-        $scope.expected_total_share = total_share_to_be_bought + total_share_owned;
-        $scope.expected_total_price = total_share_to_be_bought * temp_avg_share;
-        $scope.expected_new_avg_price = temp_avg_share;
-        $scope.total_share_to_be_bought = total_share_to_be_bought;
-        console.log(total_share_to_be_bought);
 
-        // new table
-      var grid_js = new gridjs.Grid({
-  columns: ["No of Share", "Price", "Average","Total share Owned","Total share Price"],
-    pagination: true,
-  data: data
-}).render(document.getElementById("wrapper"));
-  grid.updateConfig({
-       data: data
-      }).forceRender();
+          const ctx = document.getElementById('myChart');
+          var data = [];
+          let total_share_owned = parseFloat($scope.total_share_owned);
+          let single_price = parseFloat($scope.single_price);
+          let ltp = parseFloat($scope.ltp);
+          let expected_avg = parseFloat($scope.expected_avg) || ltp; // Default to LTP if not provided
 
-        //draw chart
-        myChart =  new Chart(ctx, {type: 'bar',data: {
-          labels: ctx_y,
-          datasets: [{
-            label: '# of Share',
-            data: ctx_x,
-            borderWidth: .01
-          }]
-        },
-        options: {
-          scales: {
-            y: {
-              beginAtZero: true
+          let current_total_price = total_share_owned * single_price;
+          let total_share_to_be_bought = 0;
+          let temp_avg_share = 0;
+          const max_iterations = 10000; // Limit iterations for performance
+
+          // Optimized calculation: Use binary search for efficiency
+          let low = 0;
+          let high = max_iterations;
+          let found = false;
+
+          while (low <= high) {
+            let mid = Math.floor((low + high) / 2);
+            temp_avg_share = ((mid * ltp) + current_total_price) / (mid + total_share_owned);
+            let rounded_avg = Math.round(temp_avg_share);
+
+            if (rounded_avg <= expected_avg) {
+              total_share_to_be_bought = mid;
+              high = mid - 1;
+              found = true;
+            } else {
+              low = mid + 1;
             }
           }
-        }
+
+          if (!found) {
+            total_share_to_be_bought = max_iterations; // Fallback
+          }
+
+          // Populate data for table and chart (sample every 100 for performance)
+          var ctx_x = [];
+          var ctx_y = [];
+          var ctx_z = [];
+          for (let i = 1; i <= total_share_to_be_bought; i += 100) {
+            temp_avg_share = ((i * ltp) + current_total_price) / (i + total_share_owned);
+            ctx_x.push(i);
+            ctx_y.push(i * ltp);
+            ctx_z.push(temp_avg_share);
+            data.push([i, (i * ltp).toFixed(2), temp_avg_share.toFixed(2), (i + total_share_owned).toFixed(0), ((i + total_share_owned) * temp_avg_share).toFixed(2)]);
+          }
+
+          // Set scope variables
+          $scope.expected_total_share = (total_share_to_be_bought + total_share_owned).toFixed(0);
+          $scope.expected_total_price = (total_share_to_be_bought * ltp + current_total_price).toFixed(2);
+          $scope.expected_new_avg_price = temp_avg_share.toFixed(2);
+          $scope.total_share_to_be_bought = total_share_to_be_bought;
+
+          // Render table
+          if (window.grid_js) {
+            window.grid_js.updateConfig({ data: data }).forceRender();
+          } else {
+            window.grid_js = new gridjs.Grid({
+              columns: ["No of Share", "Price", "Average", "Total Share Owned", "Total Share Price"],
+              pagination: true,
+              data: data
+            }).render(document.getElementById("wrapper"));
+          }
+
+          // Render chart
+          if (window.myChart) {
+            window.myChart.data.labels = ctx_y;
+            window.myChart.data.datasets[0].data = ctx_x;
+            window.myChart.update();
+          } else {
+            window.myChart = new Chart(ctx, {
+              type: 'bar',
+              data: {
+                labels: ctx_y,
+                datasets: [{
+                  label: '# of Shares',
+                  data: ctx_x,
+                  borderWidth: 1
+                }]
+              },
+              options: {
+                scales: {
+                  y: {
+                    beginAtZero: true
+                  }
+                }
+              }
+            });
+          }
+        };
       });
-        myChart.update();
-
-
-      }
-  });
-</script>
+    </script>
 
   </body>
 </html>

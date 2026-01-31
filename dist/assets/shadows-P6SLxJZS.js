@@ -1,4 +1,4 @@
-import{u as c,f as u,j as e,G as o,M as d,S as s,T as n,i,P as r}from"./index-CQ26ueJt.js";import{C as m,a as g}from"./ComponentSkeleton-BKI7ujPz.js";const t=[`INVESTMENT OWNER’S CONTRACT : 
+import{u as c,f as u,j as e,G as o,M as d,S as s,T as n,i,P as r}from"./index-DEZ_dp5O.js";import{C as m,a as g}from"./ComponentSkeleton-nz1gjs0l.js";const t=[`INVESTMENT OWNER’S CONTRACT : 
 
 I, _____________ ___________________, hereby state that I am an investor who is seeking to accumulate wealth for many years into the future.
 
