@@ -38,7 +38,6 @@ export default function ComponentTypography() {
                   <Typography variant="h6">Line Height: 46px</Typography>
                 </Breadcrumbs>
                 <Divider />
-
                 <Typography variant="h2">H2 Heading</Typography>
                 <Breadcrumbs aria-label="breadcrumb">
                   <Typography variant="h6">Size: 30px</Typography>
@@ -46,7 +45,6 @@ export default function ComponentTypography() {
                   <Typography variant="h6">Line Height: 38px</Typography>
                 </Breadcrumbs>
                 <Divider />
-
                 <Typography variant="h3">H3 Heading</Typography>
                 <Breadcrumbs aria-label="breadcrumb">
                   <Typography variant="h6">Size: 24px</Typography>
@@ -54,7 +52,6 @@ export default function ComponentTypography() {
                   <Typography variant="h6">Line Height: 32px</Typography>
                 </Breadcrumbs>
                 <Divider />
-
                 <Typography variant="h4">H4 Heading</Typography>
                 <Breadcrumbs aria-label="breadcrumb">
                   <Typography variant="h6">Size: 20px</Typography>
@@ -62,7 +59,6 @@ export default function ComponentTypography() {
                   <Typography variant="h6">Line Height: 28px</Typography>
                 </Breadcrumbs>
                 <Divider />
-
                 <Typography variant="h5">H5 Heading</Typography>
                 <Breadcrumbs aria-label="breadcrumb">
                   <Typography variant="h6">Size: 16px</Typography>
@@ -70,7 +66,6 @@ export default function ComponentTypography() {
                   <Typography variant="h6">Line Height: 24px</Typography>
                 </Breadcrumbs>
                 <Divider />
-
                 <Typography variant="h6">H6 Heading / Subheading</Typography>
                 <Breadcrumbs aria-label="breadcrumb">
                   <Typography variant="h6">Size: 14px</Typography>
@@ -79,11 +74,11 @@ export default function ComponentTypography() {
                 </Breadcrumbs>
               </Stack>
             </MainCard>
+
             <MainCard title="Body 1">
               <>
                 <Typography variant="body1" gutterBottom>
-                  Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor incididunt ut labore et dolore magna
-                  aliqua.
+                  Full name: Asha R. Menon — Product Manager, Mumbai. Focus: payments and user experience.
                 </Typography>
                 <Breadcrumbs aria-label="breadcrumb">
                   <Typography variant="h6">Size: 14px</Typography>
@@ -92,11 +87,11 @@ export default function ComponentTypography() {
                 </Breadcrumbs>
               </>
             </MainCard>
+
             <MainCard title="Body 2">
               <>
                 <Typography variant="body2" gutterBottom>
-                  Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor incididunt ut labore et dolore magna
-                  aliqua.
+                  Full name: Rajiv Kumar — Senior Software Engineer, Bangalore. Speciality: backend systems and reliability.
                 </Typography>
                 <Breadcrumbs aria-label="breadcrumb">
                   <Typography variant="h6">Size: 12px</Typography>
@@ -105,11 +100,11 @@ export default function ComponentTypography() {
                 </Breadcrumbs>
               </>
             </MainCard>
+
             <MainCard title="Subtitle 1">
               <>
                 <Typography variant="subtitle1" gutterBottom>
-                  Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor incididunt ut labore et dolore magna
-                  aliqua.
+                  Display name: Elena García — UX Designer, Madrid.
                 </Typography>
                 <Breadcrumbs aria-label="breadcrumb">
                   <Typography variant="h6">Size: 14px</Typography>
@@ -118,11 +113,11 @@ export default function ComponentTypography() {
                 </Breadcrumbs>
               </>
             </MainCard>
+
             <MainCard title="Subtitle 2">
               <>
                 <Typography variant="subtitle2" gutterBottom>
-                  Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor incididunt ut labore et dolore magna
-                  aliqua.
+                  Preferred name: Sam O'Neill — Data Analyst, Dublin.
                 </Typography>
                 <Breadcrumbs aria-label="breadcrumb">
                   <Typography variant="h6">Size: 12px</Typography>
@@ -131,11 +126,11 @@ export default function ComponentTypography() {
                 </Breadcrumbs>
               </>
             </MainCard>
+
             <MainCard title="Caption">
               <Stack spacing={1}>
                 <Typography variant="caption">
-                  Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor incididunt ut labore et dolore magna
-                  aliqua.
+                  Example: Prof. A. K. Gupta — Honorary Fellow, University of Delhi.
                 </Typography>
                 <Breadcrumbs aria-label="breadcrumb">
                   <Typography variant="h6">Size: 12px</Typography>
@@ -144,23 +139,25 @@ export default function ComponentTypography() {
                 </Breadcrumbs>
               </Stack>
             </MainCard>
-            <MainCard title="Budget Day Q&A">
+
+            <MainCard title="Full Name Examples">
               <Stack spacing={1}>
                 <Typography variant="subtitle1" gutterBottom>
-                  Can you tell me the Nifty 50 on previous budget day
+                  Examples of meaningful full names and short descriptors
                 </Typography>
                 <Typography variant="body2" color="success" gutterBottom>
-                  Yes
+                  Asha R. Menon — Product Manager, Mumbai
                 </Typography>
                 <Divider />
                 <Typography variant="subtitle1" gutterBottom>
-                  Can you tell me the volatility level on the above budget day
+                  International name examples
                 </Typography>
                 <Typography variant="body2" color="success">
-                  Yes
+                  Mohamed Al-Farsi — Operations Lead, Dubai
                 </Typography>
               </Stack>
             </MainCard>
+
             <MainCard title="Conversation">
               <Stack spacing={1}>
                 <Typography variant="subtitle2" gutterBottom>
@@ -182,9 +179,6 @@ export default function ComponentTypography() {
                 <Typography variant="body2" gutterBottom>
                   🔢 <strong>Closing level</strong>: ~23,482.15 points.
                 </Typography>
-                <Typography variant="body2" gutterBottom>
-                  The day was marked by volatility, but the index ended slightly lower as traders assessed the Budget announcements.
-                </Typography>
                 <Typography variant="body2">
                   Sources: {' '}
                   <Link href="https://www.moneycontrol.com/news/business/markets/stock-market-live-sensex-nifty-50-share-price-gift-nifty-latest-updates-01-02-2025-liveblog-12926080.html" target="_blank" rel="noopener">Moneycontrol</Link>{' '}
@@ -193,6 +187,7 @@ export default function ComponentTypography() {
                 </Typography>
               </Stack>
             </MainCard>
+
             <MainCard title="Conversation (formatted)">
               <Stack spacing={1}>
                 <Typography variant="subtitle2" gutterBottom>
@@ -257,7 +252,8 @@ What This Tells Us About Volatility:
 - 2024 Budget Day: significant intraday low and wide swings.
 - Budget days often show larger intraday ranges compared with ordinary sessions.
 
-If you want, I can provide exact intraday figures for other years or summarize implied volatility (VIX) trends.                </Typography>
+If you want, I can provide exact intraday figures for other years or summarize implied volatility (VIX) trends.
+                </Typography>
                 <Divider />
                 <Typography variant="subtitle2" gutterBottom>
                   ChatGPT said:
@@ -274,9 +270,6 @@ If you want, I can provide exact intraday figures for other years or summarize i
                 <Typography variant="body2" gutterBottom>
                   🔄 <strong>Intraday range</strong>: high ~23,632.45 — low ~23,318.30 (≈314-point range), indicating above-average volatility.
                 </Typography>
-                <Typography variant="body2" gutterBottom>
-                  📈 Historical trend: mixed across years; recent Budget Days (2024 & 2025) were muted or slightly negative on close.
-                </Typography>
                 <Typography variant="body2">
                   Sources: {' '}
                   <Link href="https://www.moneycontrol.com" target="_blank" rel="noopener">Moneycontrol</Link>{' '}
@@ -291,33 +284,30 @@ If you want, I can provide exact intraday figures for other years or summarize i
             </MainCard>
           </Stack>
         </Grid>
+
         <Grid item xs={12} lg={6}>
           <Stack spacing={3}>
             <MainCard title="Alignment">
               <>
                 <Typography variant="body2" gutterBottom>
-                  Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor incididunt ut labore et dolore magna
-                  aliqua. sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.
+                  Left aligned example: Laura Chen — Product Designer, Toronto.
                 </Typography>
                 <Typography variant="body2" textAlign="center" gutterBottom>
-                  Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor incididunt ut labore et dolore magna
-                  aliqua. sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.
+                  Center aligned example: Mohamed Al-Farsi — Operations Lead, Dubai.
                 </Typography>
                 <Typography variant="body2" textAlign="right">
-                  Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor incididunt ut labore et dolore magna
-                  aliqua. sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.
+                  Right aligned example: Elena García — UX Researcher, Madrid.
                 </Typography>
               </>
             </MainCard>
+
             <MainCard title="Gutter Bottom">
               <>
                 <Typography variant="body1" gutterBottom>
-                  Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor incididunt ut labore et dolore magna
-                  aliqua.
+                  Display name: John Doe (JD) — Preferred pronouns: he/him.
                 </Typography>
                 <Typography variant="body2" gutterBottom>
-                  Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor incididunt ut labore et dolore magna
-                  aliqua.
+                  Verified contact: john.doe@example.com
                 </Typography>
                 <Breadcrumbs aria-label="breadcrumb">
                   <Typography variant="h6">Size: 12px</Typography>
@@ -326,11 +316,11 @@ If you want, I can provide exact intraday figures for other years or summarize i
                 </Breadcrumbs>
               </>
             </MainCard>
+
             <MainCard title="Overline">
               <Stack spacing={1.5}>
                 <Typography variant="overline">
-                  Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor incididunt ut labore et dolore magna
-                  aliqua.
+                  Legal name: Jonathan A. Doe
                 </Typography>
                 <Breadcrumbs aria-label="breadcrumb">
                   <Typography variant="h6">Size: 12px</Typography>
@@ -339,9 +329,10 @@ If you want, I can provide exact intraday figures for other years or summarize i
                 </Breadcrumbs>
               </Stack>
             </MainCard>
+
             <MainCard title="Link">
               <Stack spacing={1.5}>
-                <Link href="#">www.mantis.com</Link>
+                <Link href="https://www.example.com/jane-doe" target="_blank">jane-doe.example.com</Link>
                 <Breadcrumbs aria-label="breadcrumb">
                   <Typography variant="h6">Size: 12px</Typography>
                   <Typography variant="h6">Weight: Regular</Typography>
@@ -349,37 +340,37 @@ If you want, I can provide exact intraday figures for other years or summarize i
                 </Breadcrumbs>
               </Stack>
             </MainCard>
+
             <MainCard title="Colors">
               <>
                 <Typography variant="h6" color="textPrimary" gutterBottom>
-                  This is textPrimary text color.
+                  Name emphasis — textPrimary
                 </Typography>
                 <Typography variant="h6" color="textSecondary" gutterBottom>
-                  This is textSecondary text color.
+                  Secondary details — textSecondary
                 </Typography>
                 <Typography variant="h6" color="primary" gutterBottom>
-                  This is primary text color.
+                  Role tag — primary
                 </Typography>
                 <Typography variant="h6" color="secondary" gutterBottom>
-                  This is secondary text color.
+                  Location tag — secondary
                 </Typography>
                 <Typography variant="h6" color="success" gutterBottom>
-                  This is success text color.
+                  Verified — success
                 </Typography>
                 <Typography variant="h6" sx={{ color: 'warning.main' }} gutterBottom>
-                  This is warning text color.
+                  Attention — warning
                 </Typography>
                 <Typography variant="h6" color="error" gutterBottom>
-                  This is error text color.
+                  Inactive — error
                 </Typography>
               </>
             </MainCard>
+
             <MainCard title="Paragraph">
               <>
                 <Typography variant="body1" gutterBottom>
-                  Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor incididunt ut labore et dolore magna
-                  aliqua. Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor incididunt ut labore et dolore
-                  magna aliqua.
+                  Asha R. Menon is a product manager with 8 years of experience in fintech, focused on improving user journeys for payments and billing flows.
                 </Typography>
                 <Breadcrumbs aria-label="breadcrumb">
                   <Typography variant="h6">Size: 14px</Typography>
@@ -388,15 +379,14 @@ If you want, I can provide exact intraday figures for other years or summarize i
                 </Breadcrumbs>
               </>
             </MainCard>
+
             <MainCard title="Font Style">
               <>
                 <Typography variant="body1" gutterBottom sx={{ fontStyle: 'italic' }}>
-                  Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor incididunt ut labore et dolore magna
-                  aliqua.
+                  Nickname: "Ash" — used in informal contexts.
                 </Typography>
                 <Typography variant="subtitle1" gutterBottom sx={{ fontStyle: 'italic' }}>
-                  Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor incididunt ut labore et dolore magna
-                  aliqua.
+                  Signature style: John A. Doe
                 </Typography>
                 <Breadcrumbs aria-label="breadcrumb">
                   <Typography variant="h6">Size: 14px</Typography>
