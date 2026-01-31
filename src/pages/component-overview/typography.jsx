@@ -193,11 +193,101 @@ export default function ComponentTypography() {
                 </Typography>
               </Stack>
             </MainCard>
-            <MainCard title="Conversation (raw HTML)">
-              <div dangerouslySetInnerHTML={{ __html: `
-<div role="presentation" class="composer-parent flex flex-1 flex-col focus-visible:outline-0"><div class="relative basis-auto flex-col -mb-(--composer-overlap-px) [--composer-overlap-px:28px] grow flex"><div aria-hidden="true" data-edge="true" class="pointer-events-none h-px w-px absolute top-0"></div><div class="flex flex-col text-sm pb-25"><article class="text-token-text-primary w-full focus:outline-none [--shadow-height:45px] has-data-writing-block:pointer-events-none has-data-writing-block:-mt-(--shadow-height) has-data-writing-block:pt-(--shadow-height) [&amp;:has([data-writing-block])&gt;*]:pointer-events-auto scroll-mt-(--header-height)" tabindex="-1" dir="auto" data-turn-id="bbb219ec-89f7-451b-a432-03eab76c2903" data-testid="conversation-turn-1" data-scroll-anchor="false" data-turn="user"><h5 class="sr-only">You said:</h5><div class="text-base my-auto mx-auto pt-3 [--thread-content-margin:--spacing(4)] @w-sm/main:[--thread-content-margin:--spacing(6)] @w-lg/main:[--thread-content-margin:--spacing(16)] px-(--thread-content-margin)"><div class="[--thread-content-max-width:40rem] @w-lg/main:[--thread-content-max-width:48rem] mx-auto max-w-(--thread-content-max-width) flex-1 group/turn-messages focus-visible:outline-hidden relative flex w-full min-w-0 flex-col" tabindex="-1"><div class="flex max-w-full flex-col grow"><div data-message-author-role="user" data-message-id="bbb219ec-89f7-451b-a432-03eab76c2903" dir="auto" class="min-h-8 text-message relative flex w-full flex-col items-end gap-2 text-start break-words whitespace-normal [.text-message+&amp;]:mt-1"><div class="flex w-full flex-col gap-1 empty:hidden items-end rtl:items-start"><div class="user-message-bubble-color corner-superellipse/1.1 relative rounded-[18px] px-4 py-1.5 data-[multiline]:py-3 max-w-[var(--user-chat-width,70%)]"><div class="whitespace-pre-wrap">Can tell me the nifity 50 on previous budget day </div></div></div></div></div><div class="z-0 flex justify-end"><div class="touch:-me-2 touch:-ms-3.5 -ms-2.5 -me-1 flex flex-wrap items-center gap-y-4 p-1 select-none focus-within:transition-none hover:transition-none touch:pointer-events-auto touch:opacity-100 duration-300 group-hover/turn-messages:delay-300 pointer-events-none opacity-0 motion-safe:transition-opacity group-hover/turn-messages:pointer-events-auto group-hover/turn-messages:opacity-100 group-focus-within/turn-messages:pointer-events-auto group-focus-within/turn-messages:opacity-100 has-data-[state=open]:pointer-events-auto has-data-[state=open]:opacity-100" style="mask-position: 0% 0%;"><button class="text-token-text-secondary hover:bg-token-bg-secondary rounded-lg" aria-label="Copy" aria-pressed="false" data-testid="copy-turn-action-button" data-state="closed"><span class="flex items-center justify-center touch:w-10 h-8 w-8"><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" aria-hidden="true" class="icon"><use href="/cdn/assets/sprites-core-c9exbsc1.svg#ce3544" fill="currentColor"></use></svg></span></button><button class="text-token-text-secondary hover:bg-token-bg-secondary rounded-lg" aria-label="Edit message" aria-pressed="false" data-state="closed"><span class="flex items-center justify-center touch:w-10 h-8 w-8"><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" aria-hidden="true" class="icon"><use href="/cdn/assets/sprites-core-c9exbsc1.svg#6d87e1" fill="currentColor"></use></svg></span></button></div></div></div></article><article class="text-token-text-primary w-full focus:outline-none [--shadow-height:45px] has-data-writing-block:pointer-events-none has-data-writing-block:-mt-(--shadow-height) has-data-writing-block:pt-(--shadow-height) [&amp;:has([data-writing-block])&gt;*]:pointer-events-auto [content-visibility:auto] supports-[content-visibility:auto]:[contain-intrinsic-size:auto_100lvh] scroll-mt-[calc(var(--header-height)+min(200px,max(70px,20svh)))]" tabindex="-1" dir="auto" data-turn-id="1fbf3ed4-fb83-4619-8e96-744a0c3a244a" data-testid="conversation-turn-2" data-scroll-anchor="false" data-turn="assistant"><h6 class="sr-only">ChatGPT said:</h6><div class="text-base my-auto mx-auto [--thread-content-margin:--spacing(4)] @w-sm/main:[--thread-content-margin:--spacing(6)] @w-lg/main:[--thread-content-margin:--spacing(16)] px-(--thread-content-margin)"><div class="[--thread-content-max-width:40rem] @w-lg/main:[--thread-content-max-width:48rem] mx-auto max-w-(--thread-content-max-width) flex-1 group/turn-messages focus-visible:outline-hidden relative flex w-full min-w-0 flex-col agent-turn" tabindex="-1"><div class="flex max-w-full flex-col grow"><div data-message-author-role="assistant" data-message-id="72f79c1a-060b-4d66-8a68-d1a8881fc953" dir="auto" class="min-h-8 text-message relative flex w-full flex-col items-end gap-2 text-start break-words whitespace-normal [.text-message+&amp;]:mt-1" data-message-model-slug="gpt-5-2"><div class="flex w-full flex-col gap-1 empty:hidden first:pt-[1px]"><div class="markdown prose dark:prose-invert w-full wrap-break-word dark markdown-new-styling"><p data-start="0" data-end="203">Here’s what <strong data-start="12" data-end="80">Nifty 50 did on the <em data-start="34" data-end="47">most recent</em> Budget Day (Union Budget 2025)</strong> — which is the latest <em data-start="103" data-end="113">previous</em> Budget Day before the 2026 Budget that’s coming up: <span class="" data-state="closed"><span class="ms-1 inline-flex max-w-full items-center select-none relative top-[-0.094rem] animate-[show_150ms_ease-in]" data-testid="webpage-citation-pill" style="width: 88px;"><a href="https://www.moneycontrol.com/news/business/markets/stock-market-live-sensex-nifty-50-share-price-gift-nifty-latest-updates-01-02-2025-liveblog-12926080.html?utm_source=chatgpt.com" target="_blank" rel="noopener" alt="https://www.moneycontrol.com/news/business/markets/stock-market-live-sensex-nifty-50-share-price-gift-nifty-latest-updates-01-02-2025-liveblog-12926080.html?utm_source=chatgpt.com" class="flex h-4.5 overflow-hidden rounded-xl px-2 text-[9px] font-medium transition-colors duration-150 ease-in-out text-token-text-secondary! bg-[#F4F4F4]! dark:bg-[#303030]!" style="max-width: 88px;"><span class="relative start-0 bottom-0 flex h-full w-full items-center"><span class="flex h-4 w-full items-center justify-between" style="opacity: 1; transform: none;"><span class="max-w-[15ch] grow truncate overflow-hidden text-center">Moneycontrol</span><span class="-me-1 flex h-full items-center rounded-full px-1 text-[#8F8F8F]">+1</span></span></span></a></span></span></p>
-... (truncated for brevity in this view) ...
-` }} />
+            <MainCard title="Conversation (formatted)">
+              <Stack spacing={1}>
+                <Typography variant="subtitle2" gutterBottom>
+                  You said:
+                </Typography>
+                <Typography variant="body2" color="textSecondary" gutterBottom>
+User: Can tell me the nifity 50 on previous budget day
+
+Assistant: Here’s what Nifty 50 did on the most recent Budget Day (Union Budget 2025) — which is the latest previous Budget Day before the 2026 Budget that’s coming up:
+📊 Nifty 50 on Budget Day — 1 February 2025
+📉 Nifty 50 closed down ~0.11% compared with the previous day’s close.
+🔢 Closing level: ~23,482.15 points.
+The day was marked by volatility, but the index ended slightly lower as traders assessed the Budget announcements.
+➡️ Overall, markets were muted on that Budget Day, with a marginal fall in Nifty and mixed sector reactions—some stocks rose on sector-specific optimism (like consumer/auto), while others lagged.
+
+Assistant (table summary): Nifty 50 Budget Day Performance (Last 10+ Years)
+2025 — 1 Feb 2025 — –0.11% — Closed ~23,482.15 (down)
+2024 — 1 Feb 2024 — –0.13% — Nifty closed lower at ~21,697.45
+2023 — 1 Feb 2023 — –0.20% — Nifty down slightly
+2022 — 1 Feb 2022 — +1.4% — Market rallied on that day
+2021 — 1 Feb 2021 — +4.7% — Strong positive reaction
+2020 — 1 Feb 2020 — –2.5% — Significant negative move
+2019 — 5 Jul 2019 — –1.1% — Market down
+2018 — 1 Feb 2018 — –0.1% — Nearly flat
+2017 — 1 Feb 2017 — +1.8% — Positive session
+2016 — 29 Feb 2016 — –0.6% — Budget earlier in year
+2015 — 28 Feb 2015 — +0.6% — Positive on Budget day
+2014 — 10 Jul 2014 — –0.2% — Muted decline
+
+➡️ Summary Trend: Nifty on Budget Day has mixed results — some years it rallies, other years it falls or ends flat.
+Largest positive moves: 2021 (+4.7%) and 2022 (+1.4%).
+Largest negative move: 2020 (–2.5%).
+In recent years (2024 & 2025), returns have been slightly negative or flat.
+
+User: Yes
+User: Can you tell me the volatility level on the above budget day
+
+Assistant: Here’s a summary of volatility on Budget Days for the Nifty 50, focusing on the most recent ones (especially 1 Feb 2025) and historical volatility context:
+📊 Budget Day 2025 (1 Feb 2025) – Intraday Volatility
+On Budget Day 2025, the Nifty 50 experienced high intraday volatility — despite closing nearly flat, price swings during the session were significant. Key indicators:
+- Traders and analysts noted strong fluctuations within the session.
+- Reported intraday range data showed the index touched an intraday high of ~23,632 and lower levels nearer to midday declines before recovery, indicating wide price movement (>200 points).
+- Historically, intraday volatility on Budget Days for Nifty tends to be above normal, often within ~2–3% intraday swings.
+
+Putting this in context:
+- A 2–3% intraday range on Budget Days means if Nifty is around ~23,500, it may swing roughly ±470–700 points in a day.
+- Analysts often highlight higher than usual implied volatility (IV) around Budgets.
+
+Assistant (exact intraday levels):
+Budget Day — 1 February 2025 (Union Budget 2025-26)
+- Intraday High: ~23,632.45
+- Intraday Low: ~23,318.30
+➡️ Trading range ≈ ~314 points — sign of above-average volatility.
+
+Budget Day — 1 February 2024 (Union Budget 2024-25)
+- Intraday Low: ~21,658.75
+- Closing Level (approx): ~21,697.45
+(2024 also traded in a wide range; volatile session.)
+
+What This Tells Us About Volatility:
+- 2025 Budget Day: ~314-point high-low swing suggests elevated intraday movement.
+- 2024 Budget Day: significant intraday low and wide swings.
+- Budget days often show larger intraday ranges compared with ordinary sessions.
+
+If you want, I can provide exact intraday figures for other years or summarize implied volatility (VIX) trends.                </Typography>
+                <Divider />
+                <Typography variant="subtitle2" gutterBottom>
+                  ChatGPT said:
+                </Typography>
+                <Typography variant="h6" gutterBottom>
+                  📊 <strong>Nifty 50 on <em>Budget Day</em> — 1 February 2025</strong>
+                </Typography>
+                <Typography variant="body2" gutterBottom>
+                  📉 <strong>Nifty 50 closed down ~0.11%</strong> compared with the previous day’s close.
+                </Typography>
+                <Typography variant="body2" gutterBottom>
+                  🔢 <strong>Closing level</strong>: ~23,482.15 points.
+                </Typography>
+                <Typography variant="body2" gutterBottom>
+                  🔄 <strong>Intraday range</strong>: high ~23,632.45 — low ~23,318.30 (≈314-point range), indicating above-average volatility.
+                </Typography>
+                <Typography variant="body2" gutterBottom>
+                  📈 Historical trend: mixed across years; recent Budget Days (2024 & 2025) were muted or slightly negative on close.
+                </Typography>
+                <Typography variant="body2">
+                  Sources: {' '}
+                  <Link href="https://www.moneycontrol.com" target="_blank" rel="noopener">Moneycontrol</Link>{' '}
+                  · {' '}
+                  <Link href="https://www.livemint.com" target="_blank" rel="noopener">Livemint</Link>{' '}
+                  · {' '}
+                  <Link href="https://www.business-standard.com" target="_blank" rel="noopener">Business Standard</Link>{' '}
+                  · {' '}
+                  <Link href="https://www.etnownews.com" target="_blank" rel="noopener">ET Now</Link>
+                </Typography>
+              </Stack>
             </MainCard>
           </Stack>
         </Grid>
