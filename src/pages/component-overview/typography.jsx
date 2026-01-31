@@ -20,183 +20,18 @@ export default function ComponentTypography() {
           <Stack spacing={3}>
             <MainCard title="Basic">
               <Stack spacing={0.75} sx={{ mt: -1.5 }}>
-                <Typography variant="h1">Inter</Typography>
-                <Typography variant="h5">Font Family</Typography>
-                <Breadcrumbs aria-label="breadcrumb">
-                  <Typography variant="h6">Regular</Typography>
-                  <Typography variant="h6">Medium</Typography>
-                  <Typography variant="h6">Bold</Typography>
-                </Breadcrumbs>
+                <Typography variant="h1">Option Trading</Typography>
               </Stack>
             </MainCard>
-            <MainCard title="Heading">
-              <Stack spacing={2}>
-                <Typography variant="h1">H1 Heading</Typography>
-                <Breadcrumbs aria-label="breadcrumb">
-                  <Typography variant="h6">Size: 38px</Typography>
-                  <Typography variant="h6">Weight: Bold</Typography>
-                  <Typography variant="h6">Line Height: 46px</Typography>
-                </Breadcrumbs>
-                <Divider />
-                <Typography variant="h2">H2 Heading</Typography>
-                <Breadcrumbs aria-label="breadcrumb">
-                  <Typography variant="h6">Size: 30px</Typography>
-                  <Typography variant="h6">Weight: Bold</Typography>
-                  <Typography variant="h6">Line Height: 38px</Typography>
-                </Breadcrumbs>
-                <Divider />
-                <Typography variant="h3">H3 Heading</Typography>
-                <Breadcrumbs aria-label="breadcrumb">
-                  <Typography variant="h6">Size: 24px</Typography>
-                  <Typography variant="h6">Weight: Regular & Bold</Typography>
-                  <Typography variant="h6">Line Height: 32px</Typography>
-                </Breadcrumbs>
-                <Divider />
-                <Typography variant="h4">H4 Heading</Typography>
-                <Breadcrumbs aria-label="breadcrumb">
-                  <Typography variant="h6">Size: 20px</Typography>
-                  <Typography variant="h6">Weight: Bold</Typography>
-                  <Typography variant="h6">Line Height: 28px</Typography>
-                </Breadcrumbs>
-                <Divider />
-                <Typography variant="h5">H5 Heading</Typography>
-                <Breadcrumbs aria-label="breadcrumb">
-                  <Typography variant="h6">Size: 16px</Typography>
-                  <Typography variant="h6">Weight: Regular & Medium & Bold</Typography>
-                  <Typography variant="h6">Line Height: 24px</Typography>
-                </Breadcrumbs>
-                <Divider />
-                <Typography variant="h6">H6 Heading / Subheading</Typography>
-                <Breadcrumbs aria-label="breadcrumb">
-                  <Typography variant="h6">Size: 14px</Typography>
-                  <Typography variant="h6">Weight: Regular</Typography>
-                  <Typography variant="h6">Line Height: 22px</Typography>
-                </Breadcrumbs>
-              </Stack>
-            </MainCard>
-
-            <MainCard title="Body 1">
-              <>
-                <Typography variant="body1" gutterBottom>
-                  Full name: Asha R. Menon — Product Manager, Mumbai. Focus: payments and user experience.
-                </Typography>
-                <Breadcrumbs aria-label="breadcrumb">
-                  <Typography variant="h6">Size: 14px</Typography>
-                  <Typography variant="h6">Weight: Regular</Typography>
-                  <Typography variant="h6">Line Height: 22px</Typography>
-                </Breadcrumbs>
-              </>
-            </MainCard>
-
-            <MainCard title="Body 2">
-              <>
-                <Typography variant="body2" gutterBottom>
-                  Full name: Rajiv Kumar — Senior Software Engineer, Bangalore. Speciality: backend systems and reliability.
-                </Typography>
-                <Breadcrumbs aria-label="breadcrumb">
-                  <Typography variant="h6">Size: 12px</Typography>
-                  <Typography variant="h6">Weight: Regular</Typography>
-                  <Typography variant="h6">Line Height: 20px</Typography>
-                </Breadcrumbs>
-              </>
-            </MainCard>
-
-            <MainCard title="Subtitle 1">
-              <>
-                <Typography variant="subtitle1" gutterBottom>
-                  Display name: Elena García — UX Designer, Madrid.
-                </Typography>
-                <Breadcrumbs aria-label="breadcrumb">
-                  <Typography variant="h6">Size: 14px</Typography>
-                  <Typography variant="h6">Weight: Medium</Typography>
-                  <Typography variant="h6">Line Height: 22px</Typography>
-                </Breadcrumbs>
-              </>
-            </MainCard>
-
-            <MainCard title="Subtitle 2">
-              <>
-                <Typography variant="subtitle2" gutterBottom>
-                  Preferred name: Sam O'Neill — Data Analyst, Dublin.
-                </Typography>
-                <Breadcrumbs aria-label="breadcrumb">
-                  <Typography variant="h6">Size: 12px</Typography>
-                  <Typography variant="h6">Weight: Medium</Typography>
-                  <Typography variant="h6">Line Height: 20px</Typography>
-                </Breadcrumbs>
-              </>
-            </MainCard>
-
-            <MainCard title="Caption">
-              <Stack spacing={1}>
-                <Typography variant="caption">
-                  Example: Prof. A. K. Gupta — Honorary Fellow, University of Delhi.
-                </Typography>
-                <Breadcrumbs aria-label="breadcrumb">
-                  <Typography variant="h6">Size: 12px</Typography>
-                  <Typography variant="h6">Weight: Regular</Typography>
-                  <Typography variant="h6">Line Height: 20px</Typography>
-                </Breadcrumbs>
-              </Stack>
-            </MainCard>
-
-            <MainCard title="Full Name Examples">
-              <Stack spacing={1}>
-                <Typography variant="subtitle1" gutterBottom>
-                  Examples of meaningful full names and short descriptors
-                </Typography>
-                <Typography variant="body2" color="success" gutterBottom>
-                  Asha R. Menon — Product Manager, Mumbai
-                </Typography>
-                <Divider />
-                <Typography variant="subtitle1" gutterBottom>
-                  International name examples
-                </Typography>
-                <Typography variant="body2" color="success">
-                  Mohamed Al-Farsi — Operations Lead, Dubai
-                </Typography>
-              </Stack>
-            </MainCard>
-
-            <MainCard title="Conversation">
+            <MainCard title="budget day Option trading volatility example">
               <Stack spacing={1}>
                 <Typography variant="subtitle2" gutterBottom>
                   You said:
                 </Typography>
-                <Typography variant="body2" color="textSecondary" gutterBottom>
-                  Can tell me the nifity 50 on previous budget day
-                </Typography>
-                <Divider />
-                <Typography variant="subtitle2" gutterBottom>
-                  ChatGPT said:
-                </Typography>
-                <Typography variant="h6" gutterBottom>
-                  📊 <strong>Nifty 50 on <em>Budget Day</em> — 1 February 2025</strong>
-                </Typography>
-                <Typography variant="body2" gutterBottom>
-                  📉 <strong>Nifty 50 closed down ~0.11%</strong> compared with the previous day’s close.
-                </Typography>
-                <Typography variant="body2" gutterBottom>
-                  🔢 <strong>Closing level</strong>: ~23,482.15 points.
-                </Typography>
-                <Typography variant="body2">
-                  Sources: {' '}
-                  <Link href="https://www.moneycontrol.com/news/business/markets/stock-market-live-sensex-nifty-50-share-price-gift-nifty-latest-updates-01-02-2025-liveblog-12926080.html" target="_blank" rel="noopener">Moneycontrol</Link>{' '}
-                  and {' '}
-                  <Link href="https://www.livemint.com/market/stock-market-news/budget-2025-26-share-market-impact-live-updates-sensex-nifty-50-stock-market-railways-defence-infra-nirmala-sitharaman-11738322907886.html" target="_blank" rel="noopener">Livemint</Link>
-                </Typography>
-              </Stack>
-            </MainCard>
-
-            <MainCard title="Conversation (formatted)">
-              <Stack spacing={1}>
-                <Typography variant="subtitle2" gutterBottom>
-                  You said:
-                </Typography>
-                <Typography variant="body2" color="textSecondary" gutterBottom>
+                <Typography variant="h5" color="textSecondary" gutterBottom>
 User: Can tell me the nifity 50 on previous budget day
 
-Assistant: Here’s what Nifty 50 did on the most recent Budget Day (Union Budget 2025) — which is the latest previous Budget Day before the 2026 Budget that’s coming up:
+Assistant: Here what Nifty 50 did on the most recent Budget Day (Union Budget 2025) — which is the latest previous Budget Day before the 2026 Budget that’s coming up:
 📊 Nifty 50 on Budget Day — 1 February 2025
 📉 Nifty 50 closed down ~0.11% compared with the previous day’s close.
 🔢 Closing level: ~23,482.15 points.
@@ -225,7 +60,7 @@ In recent years (2024 & 2025), returns have been slightly negative or flat.
 User: Yes
 User: Can you tell me the volatility level on the above budget day
 
-Assistant: Here’s a summary of volatility on Budget Days for the Nifty 50, focusing on the most recent ones (especially 1 Feb 2025) and historical volatility context:
+Assistant: Here a summary of volatility on Budget Days for the Nifty 50, focusing on the most recent ones (especially 1 Feb 2025) and historical volatility context:
 📊 Budget Day 2025 (1 Feb 2025) – Intraday Volatility
 On Budget Day 2025, the Nifty 50 experienced high intraday volatility — despite closing nearly flat, price swings during the session were significant. Key indicators:
 - Traders and analysts noted strong fluctuations within the session.
