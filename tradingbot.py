@@ -9,6 +9,7 @@ import json
 import time
 import joblib
 import numpy as np
+import pandas as pd
 from datetime import date, datetime, timedelta
 from kiteconnect import KiteConnect
 
@@ -302,7 +303,13 @@ def extract_features_for_prediction(spot_price, atm_strike, ce_data, pe_data):
         pe_data.get('vega', 0),
         pe_data.get('theta', 0),
     ]
-    return np.array(features).reshape(1, -1)
+
+    feature_names = [
+        'spot_price', 'atm_strike',
+        'ce_ltp', 'ce_iv', 'ce_oi', 'ce_oi_change_pct', 'ce_delta', 'ce_gamma', 'ce_vega', 'ce_theta',
+        'pe_ltp', 'pe_iv', 'pe_oi', 'pe_oi_change_pct', 'pe_delta', 'pe_gamma', 'pe_vega', 'pe_theta'
+    ]
+    return pd.DataFrame([features], columns=feature_names)
 
 def find_option_data_for_strike(records_data, strike_price):
     """Finds CE and PE data for a specific strike from the option chain data."""
