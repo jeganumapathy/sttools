@@ -4,6 +4,7 @@ import requests
 import sys
 import random
 import math
+import json
 from datetime import date, datetime, timedelta
 from kiteconnect import KiteConnect
 
@@ -20,7 +21,25 @@ headers = {
 
 # --- Option Greeks Calculation (Black-Scholes) ---
 RISK_FREE_RATE = 0.07  # 7% annual risk-free rate assumption
-MIN_EXPIRY_FOR_STABLE_GREEKS = 0.5 / 365.0  # Half a day in years; avoids Gamma explosion
+MIN_EXPIRY_FOR_STABLE_GREEKS = 0.5 / 365.0  # Half a day in years; avoids Gamma/Vega explosion
+
+# --- Configuration ---
+def load_config():
+    defaults = {
+        "min_profit_pct": 3,
+        "max_profit_pct": 8,
+        "stop_loss_pct": 5,
+        "trailing_stop_pct": 2,
+        "quantity": 25,
+        "spot_mean": 25642
+    }
+    try:
+        with open("config.json", "r") as f:
+            return {**defaults, **json.load(f)}
+    except FileNotFoundError:
+        return defaults
+
+CONFIG = load_config()
 
 # --- Trade State Management ---
 trade_book = {
@@ -29,10 +48,12 @@ trade_book = {
     "strike": None,
     "type": None,  # "CE" or "PE"
     "buy_price": 0,
-    "quantity": 65,  # Realistic quantity (Nifty lot size)
-    "min_profit_pct": 3,
-    "max_profit_pct": 8,
-    "stop_loss_pct": 5,  # Stop loss percentage
+    "quantity": CONFIG["quantity"],
+    "min_profit_pct": CONFIG["min_profit_pct"],
+    "max_profit_pct": CONFIG["max_profit_pct"],
+    "stop_loss_pct": CONFIG["stop_loss_pct"],
+    "trailing_stop_pct": CONFIG["trailing_stop_pct"],
+    "highest_pnl_pct": 0.0,  # Track highest PnL for trailing stop
     "total_pnl": 0.0,
     "total_buy_qty": 0,
     "total_sell_qty": 0,
@@ -52,6 +73,10 @@ def calculate_greeks(option_type, S, K, T, r, sigma):
     r: Risk-free rate, sigma: Implied Volatility
     """
     if T <= 0 or sigma <= 0 or S <= 0: # Avoid math domain errors
+        return {'delta': 0, 'gamma': 0, 'theta': 0, 'vega': 0}
+
+    # Handle extreme IV (e.g., > 200%)
+    if sigma > 2.0:
         return {'delta': 0, 'gamma': 0, 'theta': 0, 'vega': 0}
 
     # Pre-calculate to avoid ZeroDivisionError and for reuse
@@ -81,10 +106,11 @@ def calculate_greeks(option_type, S, K, T, r, sigma):
     gamma = pdf_d1 / (S * vol_sqrt_t)
     vega = S * pdf_d1 * math.sqrt(T)
     
-    # Mitigate Gamma/Theta explosion near expiry by neutralizing them.
+    # Mitigate Gamma/Theta/Vega explosion near expiry by neutralizing them.
     if T < MIN_EXPIRY_FOR_STABLE_GREEKS:
         gamma = 0
         theta = 0
+        vega = 0
 
     # Return Theta per day and Vega for a 1% change in IV
     return {'delta': delta, 'gamma': gamma, 'theta': theta / 365, 'vega': vega / 100}
@@ -92,15 +118,17 @@ def calculate_greeks(option_type, S, K, T, r, sigma):
 
 def generate_dummy_data(symbol, expiry_date):
     """Generates dummy option chain data for testing."""
-    # Initialize static spot price for random walk behavior
+    # Initialize static spot price
     if not hasattr(generate_dummy_data, "spot_price"):
-        generate_dummy_data.spot_price = 25642
+        generate_dummy_data.spot_price = CONFIG["spot_mean"]
 
     is_expiry_day = (datetime.strptime(expiry_date, "%d-%b-%Y").date() == date.today())
     
-    # Simulate volatility regimes: 30% chance of High Volatility, 70% Low Volatility
-    volatility = 40 if random.random() < 0.3 else 5
-    generate_dummy_data.spot_price += random.uniform(-volatility, volatility)
+    # Ornstein-Uhlenbeck process (Mean Reverting)
+    theta = 0.15  # Speed of reversion
+    sigma_vol = 20 # Volatility
+    dx = theta * (CONFIG["spot_mean"] - generate_dummy_data.spot_price) + sigma_vol * random.gauss(0, 1)
+    generate_dummy_data.spot_price += dx
     spot_price = generate_dummy_data.spot_price
 
     try:
@@ -349,9 +377,15 @@ def trading_cycle(kite, expiry):
             pnl_pct = ((exit_price - trade_book["buy_price"]) / trade_book["buy_price"]) * 100
             print(f"ℹ️  Holding {trade_book['symbol']}. Buy: {trade_book['buy_price']:.2f}, Bid: {exit_price:.2f}, PnL: {pnl_pct:.2f}%")
 
-            # Check for profit target or stop-loss
-            if pnl_pct >= trade_book["min_profit_pct"] or pnl_pct <= -trade_book["stop_loss_pct"]:
-                exit_reason = "PROFIT TARGET" if pnl_pct >= 0 else "STOP-LOSS"
+            # Update highest PnL for trailing stop
+            if pnl_pct > trade_book["highest_pnl_pct"]:
+                trade_book["highest_pnl_pct"] = pnl_pct
+            
+            trailing_stop_hit = (trade_book["highest_pnl_pct"] > 0 and 
+                                 pnl_pct < (trade_book["highest_pnl_pct"] - trade_book["trailing_stop_pct"]))
+
+            if pnl_pct >= trade_book["max_profit_pct"] or pnl_pct <= -trade_book["stop_loss_pct"] or trailing_stop_hit:
+                exit_reason = "PROFIT TARGET" if pnl_pct >= trade_book["max_profit_pct"] else ("TRAILING STOP" if trailing_stop_hit else "STOP-LOSS")
                 # Calculate PnL based on the actual executable price (bid price)
                 pnl_amount = (exit_price - trade_book["buy_price"]) * trade_book["quantity"]
                 trade_book["total_pnl"] += pnl_amount
@@ -360,7 +394,7 @@ def trading_cycle(kite, expiry):
                 # Exit at the market bid price
                 place_gtt_order(kite, trade_book["symbol"], "SELL", trade_book["quantity"], exit_price, exit_price)
                 # Reset trade book after selling
-                trade_book.update({"active_trade": False, "symbol": None, "strike": None, "type": None, "buy_price": 0})
+                trade_book.update({"active_trade": False, "symbol": None, "strike": None, "type": None, "buy_price": 0, "highest_pnl_pct": 0.0})
     else:
         # --- ENTRY LOGIC ---
         # Example Strategy: Buy ATM PE if LTP < 100, Delta is between -0.4 and -0.6, and OI > 50k.
@@ -369,8 +403,10 @@ def trading_cycle(kite, expiry):
         entry_price = atm_pe_data.get('sellPrice1')
         pe_delta = atm_pe_data.get('delta', 0)
         pe_oi = atm_pe_data.get('openInterest', 0)
+        pe_oi_change_pct = atm_pe_data.get('pchangeinOpenInterest', 0)
 
-        if entry_price and entry_price < 100 and -0.6 < pe_delta < -0.4 and pe_oi > 50000:
+        # Added OI Change check for stronger signal
+        if entry_price and entry_price < 100 and -0.6 < pe_delta < -0.4 and pe_oi > 50000 and pe_oi_change_pct > 0:
             log_msg = (f"🚨 ENTRY SIGNAL: PE Ask Price({entry_price:.2f}) < 100, "
                        f"Delta({pe_delta:.2f}) is favorable, and OI({pe_oi}) is high. "
                        f"Placing BUY order.")
@@ -391,7 +427,8 @@ def trading_cycle(kite, expiry):
                     "symbol": trading_symbol,
                     "strike": atm_strike,
                     "type": "PE",
-                    "buy_price": entry_price,  # Use the ask price as the buy price for accurate PnL
+                    "buy_price": entry_price,  # Use the ask price as the buy price for accurate PnL,
+                    "highest_pnl_pct": 0.0
                 })
                 trade_book["total_buy_qty"] += trade_book["quantity"]
 
@@ -484,7 +521,7 @@ if __name__ == "__main__":
         logging.info("\n🛑 Stopping ticker...")
         stop_event.set()
         t.join()
+        print(f"\n💰 Total Session Profit/Loss: {trade_book['total_pnl']:.2f}")
         print(f"📊 Total Buy Quantity: {trade_book['total_buy_qty']}")
         print(f"📊 Total Sell Quantity: {trade_book['total_sell_qty']}")
-        print(f"\n💰 Total Session Profit/Loss: {trade_book['total_pnl']:.2f}")
         logging.info("Exited.")
