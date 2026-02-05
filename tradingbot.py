@@ -580,6 +580,12 @@ if __name__ == "__main__":
     print("⚠️  DISCLAIMER: This is a sample script for educational purposes only.       ⚠️")
     print("⚠️  Automated trading involves significant risk and can lead to financial loss. ⚠️")
     print("⚠️  You are solely responsible for any trades placed by this script.          ⚠️")
+
+    print("\n" + "▓" * 80)
+    print(f"▓  🚀 LIVE TRADING   : {'✅ ENABLED' if LIVE_TRADING else '❌ DISABLED'}")
+    print(f"▓  🛠️  DATA SOURCE    : {'📝 DUMMY DATA' if USE_DUMMY_DATA else '📡 LIVE API'}")
+    print("▓" * 80 + "\n")
+
     if not LIVE_TRADING:
         print("🛡️  DRY RUN MODE: No real trades will be placed.")
     else:
@@ -595,7 +601,7 @@ if __name__ == "__main__":
         logging.warning("⚠️ ML model 'trading_model.joblib' not found. Running without ML predictions.")
 
     kite = None
-    if not USE_DUMMY_DATA:
+    if not USE_DUMMY_DATA and LIVE_TRADING:
         kite = kite_input()
         if not kite:
             sys.exit("❌ Exiting: Kite login failed.")
