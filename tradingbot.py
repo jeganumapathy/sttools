@@ -24,7 +24,7 @@ trade_book = {
     "strike": None,
     "type": None,  # "CE" or "PE"
     "buy_price": 0,
-    "quantity": 25,  # Realistic quantity (Nifty lot size)
+    "quantity": 65,  # Realistic quantity (Nifty lot size)
     "min_profit_pct": 3,
     "max_profit_pct": 8,
     "stop_loss_pct": 5,  # Stop loss percentage
@@ -37,9 +37,17 @@ TEST_MODE = True  # Set to True to use dummy data and random LTPs
 
 def generate_dummy_data(symbol, expiry_date):
     """Generates dummy option chain data for testing."""
+    # Initialize static spot price for random walk behavior
+    if not hasattr(generate_dummy_data, "spot_price"):
+        generate_dummy_data.spot_price = 25642
+
     is_expiry_day = (datetime.strptime(expiry_date, "%d-%b-%Y").date() == date.today())
-    # Simulate a spot price around 22000 with some random movement
-    spot_price = 25642 + random.uniform(-50, 50)
+    
+    # Simulate volatility regimes: 30% chance of High Volatility, 70% Low Volatility
+    volatility = 40 if random.random() < 0.3 else 5
+    generate_dummy_data.spot_price += random.uniform(-volatility, volatility)
+    spot_price = generate_dummy_data.spot_price
+
     atm_strike = round(spot_price / 50) * 50
     
     data = []
@@ -51,7 +59,7 @@ def generate_dummy_data(symbol, expiry_date):
         pe_intrinsic = max(0, strike - spot_price)
         
         # On expiry day, time value decays to near zero.
-        time_value_component = random.uniform(0, 5) if is_expiry_day else random.uniform(20, 100)
+        time_value_component = random.uniform(0, 5) if is_expiry_day else random.uniform(40, 60)
 
         ce_ltp = ce_intrinsic + time_value_component
         pe_ltp = pe_intrinsic + time_value_component
