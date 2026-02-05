@@ -3,6 +3,7 @@ import threading
 import requests
 import sys
 import random
+import math
 from datetime import date, datetime
 from kiteconnect import KiteConnect
 
@@ -16,6 +17,9 @@ headers = {
     'Accept': 'application/json, text/javascript, */*; q=0.01',
     'X-Requested-With': 'XMLHttpRequest'
 }
+
+# --- Option Greeks Calculation (Black-Scholes) ---
+RISK_FREE_RATE = 0.07  # 7% annual risk-free rate assumption
 
 # --- Trade State Management ---
 trade_book = {
@@ -34,6 +38,41 @@ trade_book = {
 }
 
 TEST_MODE = True  # Set to True to use dummy data and random LTPs
+WAIT_TIME = 1  # Time in seconds between each cycle (30 reduced for testing)
+
+def _cdf(x):
+    'Cumulative distribution function for the standard normal distribution'
+    return (1.0 + math.erf(x / math.sqrt(2.0))) / 2.0
+
+def calculate_greeks(option_type, S, K, T, r, sigma):
+    """
+    Calculates option greeks using the Black-Scholes model.
+    S: Spot Price, K: Strike Price, T: Time to Expiry (years),
+    r: Risk-free rate, sigma: Implied Volatility
+    """
+    if T <= 0 or sigma <= 0 or S <= 0: # Avoid math domain errors
+        return {'delta': 0, 'gamma': 0, 'theta': 0, 'vega': 0}
+
+    d1 = (math.log(S / K) + (r + 0.5 * sigma ** 2) * T) / (sigma * math.sqrt(T))
+    d2 = d1 - sigma * math.sqrt(T)
+    
+    pdf_d1 = (1 / (math.sqrt(2 * math.pi))) * math.exp(-d1**2 / 2)
+
+    if option_type.upper() == "CE":
+        delta = _cdf(d1)
+        theta = -(S * pdf_d1 * sigma) / (2 * math.sqrt(T)) - r * K * math.exp(-r * T) * _cdf(d2)
+    elif option_type.upper() == "PE":
+        delta = _cdf(d1) - 1
+        theta = -(S * pdf_d1 * sigma) / (2 * math.sqrt(T)) + r * K * math.exp(-r * T) * _cdf(-d2)
+    else:
+        return {}
+
+    gamma = pdf_d1 / (S * sigma * math.sqrt(T))
+    vega = S * pdf_d1 * math.sqrt(T)
+    
+    # Return Theta per day and Vega for a 1% change in IV
+    return {'delta': delta, 'gamma': gamma, 'theta': theta / 365, 'vega': vega / 100}
+
 
 def generate_dummy_data(symbol, expiry_date):
     """Generates dummy option chain data for testing."""
@@ -48,9 +87,21 @@ def generate_dummy_data(symbol, expiry_date):
     generate_dummy_data.spot_price += random.uniform(-volatility, volatility)
     spot_price = generate_dummy_data.spot_price
 
+    try:
+        expiry_dt = datetime.strptime(expiry_date, "%d-%b-%Y")
+        expiry_date_inner = expiry_dt.strftime("%d-%m-%Y")
+    except ValueError:
+        expiry_date_inner = expiry_date
+
     atm_strike = round(spot_price / 50) * 50
     
     data = []
+    strike_prices = []
+    ce_tot_oi = 0
+    ce_tot_vol = 0
+    pe_tot_oi = 0
+    pe_tot_vol = 0
+
     # Generate strikes around ATM
     for i in range(-10, 11):
         strike = atm_strike + (i * 50)
@@ -64,24 +115,89 @@ def generate_dummy_data(symbol, expiry_date):
         ce_ltp = ce_intrinsic + time_value_component
         pe_ltp = pe_intrinsic + time_value_component
         
+        # Dummy OI and IV
+        ce_oi = random.randint(10000, 200000)
+        pe_oi = random.randint(10000, 200000)
+        ce_iv = random.uniform(0.10, 0.30)
+        pe_iv = random.uniform(0.10, 0.30)
+
+        # Calculate dummy greeks
+        time_to_expiry = max((datetime.strptime(expiry_date, "%d-%b-%Y").date() - date.today()).days, 0) / 365.0
+        ce_greeks = calculate_greeks("CE", spot_price, strike, time_to_expiry, RISK_FREE_RATE, ce_iv)
+        pe_greeks = calculate_greeks("PE", spot_price, strike, time_to_expiry, RISK_FREE_RATE, pe_iv)
+
+        common_ce = {
+            "underlying": symbol,
+            "identifier": f"OPTIDX{symbol}{expiry_date_inner}CE{strike:.2f}",
+            "expiryDate": expiry_date_inner,
+            "changeinOpenInterest": random.randint(-5000, 5000),
+            "pchangeinOpenInterest": random.uniform(-10, 10),
+            "totalTradedVolume": random.randint(100000, 5000000),
+            "change": round(random.uniform(-5, 5), 2),
+            "pchange": round(random.uniform(-2, 2), 2),
+            "totalBuyQuantity": random.randint(100000, 5000000),
+            "totalSellQuantity": random.randint(100000, 5000000),
+            "buyPrice1": round(ce_ltp - 0.05, 2),
+            "buyQuantity1": random.randint(50, 1000),
+            "sellPrice1": round(ce_ltp + 0.05, 2),
+            "sellQuantity1": random.randint(50, 1000),
+            "underlyingValue": round(spot_price, 2),
+            "optionType": "CE"
+        }
+
+        common_pe = {
+            "underlying": symbol,
+            "identifier": f"OPTIDX{symbol}{expiry_date_inner}PE{strike:.2f}",
+            "expiryDate": expiry_date_inner,
+            "changeinOpenInterest": random.randint(-5000, 5000),
+            "pchangeinOpenInterest": random.uniform(-10, 10),
+            "totalTradedVolume": random.randint(100000, 5000000),
+            "change": round(random.uniform(-5, 5), 2),
+            "pchange": round(random.uniform(-2, 2), 2),
+            "totalBuyQuantity": random.randint(100000, 5000000),
+            "totalSellQuantity": random.randint(100000, 5000000),
+            "buyPrice1": round(pe_ltp - 0.05, 2),
+            "buyQuantity1": random.randint(50, 1000),
+            "sellPrice1": round(pe_ltp + 0.05, 2),
+            "sellQuantity1": random.randint(50, 1000),
+            "underlyingValue": round(spot_price, 2),
+            "optionType": "PE"
+        }
+
+        ce_tot_oi += ce_oi
+        ce_tot_vol += common_ce["totalTradedVolume"]
+        pe_tot_oi += pe_oi
+        pe_tot_vol += common_pe["totalTradedVolume"]
+        strike_prices.append(strike)
+
         data.append({
             "strikePrice": strike,
-            "expiryDate": expiry_date,
-            "CE": {"lastPrice": round(ce_ltp, 2)},
-            "PE": {"lastPrice": round(pe_ltp, 2)}
+            "expiryDates": expiry_date,
+            "CE": {"lastPrice": round(ce_ltp, 2), "openInterest": ce_oi, 
+                   "impliedVolatility": round(ce_iv * 100, 2), **ce_greeks, **common_ce},
+            "PE": {"lastPrice": round(pe_ltp, 2), "openInterest": pe_oi,
+                   "impliedVolatility": round(pe_iv * 100, 2), **pe_greeks, **common_pe}
         })
         
     return {
-        "underlyingValue": round(spot_price, 2),
-        "expiryDates": [expiry_date],
-        "data": data,
-        "timestamp": datetime.now().strftime("%d-%b-%Y %H:%M:%S")
+        "records": {
+            "underlyingValue": round(spot_price, 2),
+            "expiryDates": [expiry_date],
+            "data": data,
+            "timestamp": datetime.now().strftime("%d-%b-%Y %H:%M:%S"),
+            "strikePrices": strike_prices
+        },
+        "filtered": {
+            "data": data,
+            "CE": {"totOI": ce_tot_oi, "totVol": ce_tot_vol},
+            "PE": {"totOI": pe_tot_oi, "totVol": pe_tot_vol}
+        }
     }
 
 def get_full_option_chain(symbol, expiry_date):
     """Fetches the entire option chain records for a given symbol and expiry."""
     if TEST_MODE:
-        return generate_dummy_data(symbol, expiry_date)
+        return generate_dummy_data(symbol, expiry_date).get('records')
 
     session = requests.Session()
     r = session.get(base_url, headers=headers, timeout=5)
@@ -101,18 +217,16 @@ def get_full_option_chain(symbol, expiry_date):
         logging.error(f"Failed to decode JSON. Response text: {response.text}")
         return None
 
-def find_ltps_for_strike(records_data, strike_price):
-    """Finds CE and PE LTP for a specific strike from the option chain data."""
-    ce_ltp = None
-    pe_ltp = None
+def find_option_data_for_strike(records_data, strike_price):
+    """Finds CE and PE data for a specific strike from the option chain data."""
+    ce_data = None
+    pe_data = None
     for item in records_data.get('data', []):
         if item.get('strikePrice') == strike_price:
-            if item.get('CE'):
-                ce_ltp = item.get('CE').get('lastPrice')
-            if item.get('PE'):
-                pe_ltp = item.get('PE').get('lastPrice')
+            ce_data = item.get('CE')
+            pe_data = item.get('PE')
             break
-    return ce_ltp, pe_ltp
+    return ce_data, pe_data
 
 def place_gtt_order(kite, symbol, trans_type, qty, price, trigger_price):
     """Places a GTT order on Kite."""
@@ -157,28 +271,52 @@ def trading_cycle(kite, expiry):
 
     spot_price = records['underlyingValue']
     atm_strike = round(spot_price / 50) * 50
-    atm_ce_ltp, atm_pe_ltp = find_ltps_for_strike(records, atm_strike)
+    atm_ce_data, atm_pe_data = find_option_data_for_strike(records, atm_strike)
+
+    if not atm_ce_data or not atm_pe_data:
+        logging.warning(f"Could not find ATM ({atm_strike}) CE/PE data.")
+        return
+
+    # --- Calculate Greeks if not in Test Mode ---
+    if not TEST_MODE:
+        time_to_expiry = max((datetime.strptime(expiry, "%d-%b-%Y").date() - date.today()).days, 0) / 365.0
+        
+        # For CE
+        ce_iv = atm_ce_data.get('impliedVolatility', 0) / 100 # Convert from %
+        atm_ce_data.update(calculate_greeks("CE", spot_price, atm_strike, time_to_expiry, RISK_FREE_RATE, ce_iv))
+
+        # For PE
+        pe_iv = atm_pe_data.get('impliedVolatility', 0) / 100 # Convert from %
+        atm_pe_data.update(calculate_greeks("PE", spot_price, atm_strike, time_to_expiry, RISK_FREE_RATE, pe_iv))
 
     # --- Display Data ---
-    print("\n" + "═" * 50)
-    print(f"📊  NIFTY 50 LIVE TRACKER")
-    print(f"🕒  {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}")
-    print("═" * 50)
-    print(f"💰  Spot Price   :  {spot_price:.2f}")
-    print(f"📅  Expiry       :  {expiry}")
-    print(f"🎯  ATM Strike   :  {atm_strike}")
-    print("─" * 50)
-    print(f"🟢  ATM CE LTP   :  {atm_ce_ltp}")
-    print(f"🔴  ATM PE LTP   :  {atm_pe_ltp}")
-    print("═" * 50)
+    print("\n" + "═" * 80)
+    print(f"📊  NIFTY 50 LIVE TRACKER | {datetime.now().strftime('%Y-%m-%d %H:%M:%S')} | Expiry: {expiry}")
+    print("═" * 80)
+    print(f"💰  Spot Price: {spot_price:<10.2f} | 🎯  ATM Strike: {atm_strike}")
+    print("─" * 80)
+    # Header
+    print(f"{'Option':<8} | {'LTP':<8} | {'OI':<10} | {'IV':<7} | {'Delta':<8} | {'Theta':<8} | {'Gamma':<8} | {'Vega':<8}")
+    print("─" * 80)
+    # CE Data
+    ce_str = f"🟢 CE    | {atm_ce_data.get('lastPrice', 0):<8.2f} | {atm_ce_data.get('openInterest', 0):<10} | {atm_ce_data.get('impliedVolatility', 0):<6.2f}% | {atm_ce_data.get('delta', 0):<8.3f} | {atm_ce_data.get('theta', 0):<8.3f} | {atm_ce_data.get('gamma', 0):<8.3f} | {atm_ce_data.get('vega', 0):<8.3f}"
+    print(ce_str)
+    # PE Data
+    pe_str = f"🔴 PE    | {atm_pe_data.get('lastPrice', 0):<8.2f} | {atm_pe_data.get('openInterest', 0):<10} | {atm_pe_data.get('impliedVolatility', 0):<6.2f}% | {atm_pe_data.get('delta', 0):<8.3f} | {atm_pe_data.get('theta', 0):<8.3f} | {atm_pe_data.get('gamma', 0):<8.3f} | {atm_pe_data.get('vega', 0):<8.3f}"
+    print(pe_str)
+    print("═" * 80)
 
     # --- Trading Logic ---
     if trade_book["active_trade"]:
         # --- EXIT LOGIC ---
         held_strike = trade_book["strike"]
-        held_ce_ltp, held_pe_ltp = find_ltps_for_strike(records, held_strike)
+        held_ce_data, held_pe_data = find_option_data_for_strike(records, held_strike)
         
-        current_ltp = held_ce_ltp if trade_book["type"] == "CE" else held_pe_ltp
+        held_option_data = held_ce_data if trade_book["type"] == "CE" else held_pe_data
+        if not held_option_data:
+            logging.warning(f"Could not find data for held strike {held_strike}. Skipping exit check.")
+            return
+        current_ltp = held_option_data.get('lastPrice')
 
         if current_ltp is not None and trade_book["buy_price"] > 0:
             pnl_pct = ((current_ltp - trade_book["buy_price"]) / trade_book["buy_price"]) * 100
@@ -196,10 +334,17 @@ def trading_cycle(kite, expiry):
                 trade_book.update({"active_trade": False, "symbol": None, "strike": None, "type": None, "buy_price": 0})
     else:
         # --- ENTRY LOGIC ---
-        # This is a placeholder for your entry strategy.
-        # Example: Buy a Put option if its LTP is below 100. DO NOT USE THIS IN LIVE TRADING.
-        if atm_pe_ltp and atm_pe_ltp < 100:
-            logging.info(f"🚨 ENTRY SIGNAL: ATM PE LTP ({atm_pe_ltp}) is below 100. Placing BUY order.")
+        # Example Strategy: Buy ATM PE if LTP < 100, Delta is between -0.4 and -0.6, and OI > 50k.
+        # DO NOT USE THIS IN LIVE TRADING.
+        atm_pe_ltp = atm_pe_data.get('lastPrice')
+        pe_delta = atm_pe_data.get('delta', 0)
+        pe_oi = atm_pe_data.get('openInterest', 0)
+
+        if atm_pe_ltp and atm_pe_ltp < 100 and -0.6 < pe_delta < -0.4 and pe_oi > 50000:
+            log_msg = (f"🚨 ENTRY SIGNAL: PE LTP({atm_pe_ltp}) < 100, "
+                       f"Delta({pe_delta:.2f}) is favorable, and OI({pe_oi}) is high. "
+                       f"Placing BUY order.")
+            logging.info(log_msg)
             
             # IMPORTANT: You need a reliable way to get the Kite 'tradingsymbol'.
             # The NSE 'identifier' is different. A robust solution uses the Kite instrument dump.
@@ -215,7 +360,7 @@ def trading_cycle(kite, expiry):
                     "symbol": trading_symbol,
                     "strike": atm_strike,
                     "type": "PE",
-                    "buy_price": atm_pe_ltp, # Approximation, ideally get from order execution details
+                    "buy_price": atm_pe_ltp,  # Approximation, ideally get from order execution details
                 })
                 trade_book["total_buy_qty"] += trade_book["quantity"]
 
@@ -258,7 +403,7 @@ def ticker_loop(stop_event, kite):
         trading_cycle(kite, nearest_expiry)
         # Politeness delay to avoid rate limiting
         logging.info("⏳ Waiting for 30 seconds for the next cycle...")
-        stop_event.wait(30)
+        stop_event.wait(WAIT_TIME)
 
 def kite_input():
         """Handles Kite Connect login and returns a valid kite object."""
