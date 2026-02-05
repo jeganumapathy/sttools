@@ -492,10 +492,16 @@ def trading_cycle(kite, expiry, model, collect_data_file=None):
         # Example Strategy: Buy ATM PE if LTP < 100, Delta is between -0.4 and -0.6, and OI > 50k.
         # DO NOT USE THIS IN LIVE TRADING.
         # To account for slippage, we check the ask price for entry
-        entry_price = atm_pe_data.get('sellPrice1')
+        pe_entry_price = atm_pe_data.get('sellPrice1')
         pe_delta = atm_pe_data.get('delta', 0)
         pe_oi = atm_pe_data.get('openInterest', 0)
         pe_oi_change_pct = atm_pe_data.get('pchangeinOpenInterest', 0)
+
+        # Extract CE Data for analysis
+        ce_entry_price = atm_ce_data.get('sellPrice1')
+        ce_delta = atm_ce_data.get('delta', 0)
+        ce_oi = atm_ce_data.get('openInterest', 0)
+        ce_oi_change_pct = atm_ce_data.get('pchangeinOpenInterest', 0)
 
         # --- ML Model Prediction ---
         prediction = None
@@ -508,29 +514,24 @@ def trading_cycle(kite, expiry, model, collect_data_file=None):
         # Added OI Change check for stronger signal
         # Entry condition now includes ML model prediction
         if prediction == 0: # --- BEARISH SIGNAL: BUY PE ---
-            if entry_price and entry_price < 100 and -0.6 < pe_delta < -0.4 and pe_oi > 50000 and pe_oi_change_pct > 0:
-                log_msg = (f"🚨 BEARISH ENTRY SIGNAL: PE Ask Price({entry_price:.2f}) < 100, "
+            if pe_entry_price and pe_entry_price < 100 and -0.6 < pe_delta < -0.4 and pe_oi > 50000 and pe_oi_change_pct > 0:
+                log_msg = (f"🚨 BEARISH ENTRY SIGNAL: PE Ask Price({pe_entry_price:.2f}) < 100, "
                            f"Delta({pe_delta:.2f}) is favorable, and OI({pe_oi}) is high. "
                            f"ML model confirms DOWN trend. Placing BUY order for PE.")
                 logging.info(log_msg)
                 
-                trading_symbol = f"NFO:NIFTY{datetime.strptime(expiry, '%d-%b-%Y').strftime('%y%b').upper()}{atm_strike}PE"
+                trading_symbol = f"NIFTY{datetime.strptime(expiry, '%d-%b-%Y').strftime('%y%b').upper()}{atm_strike}PE"
                 logging.warning(f"Using generated placeholder trading symbol: {trading_symbol}")
 
-                order_id = place_gtt_order(kite, trading_symbol, "BUY", trade_book["quantity"], entry_price, entry_price)
+                order_id = place_gtt_order(kite, trading_symbol, "BUY", trade_book["quantity"], pe_entry_price, pe_entry_price)
                 if order_id:
                     trade_book.update({
                         "active_trade": True, "symbol": trading_symbol, "strike": atm_strike,
-                        "type": "PE", "buy_price": entry_price, "highest_pnl_pct": 0.0
+                        "type": "PE", "buy_price": pe_entry_price, "highest_pnl_pct": 0.0
                     })
                     trade_book["total_buy_qty"] += trade_book["quantity"]
 
         elif prediction == 1: # --- BULLISH SIGNAL: BUY CE ---
-            ce_entry_price = atm_ce_data.get('sellPrice1')
-            ce_delta = atm_ce_data.get('delta', 0)
-            ce_oi = atm_ce_data.get('openInterest', 0)
-            ce_oi_change_pct = atm_ce_data.get('pchangeinOpenInterest', 0)
-
             # Define your entry conditions for a CE trade here
             if ce_entry_price and ce_entry_price < 100 and 0.4 < ce_delta < 0.6 and ce_oi > 50000 and ce_oi_change_pct > 0:
                 log_msg = (f"🚨 BULLISH ENTRY SIGNAL: CE Ask Price({ce_entry_price:.2f}) < 100, "
@@ -538,7 +539,7 @@ def trading_cycle(kite, expiry, model, collect_data_file=None):
                            f"ML model confirms UP trend. Placing BUY order for CE.")
                 logging.info(log_msg)
 
-                trading_symbol = f"NFO:NIFTY{datetime.strptime(expiry, '%d-%b-%Y').strftime('%y%b').upper()}{atm_strike}CE"
+                trading_symbol = f"NIFTY{datetime.strptime(expiry, '%d-%b-%Y').strftime('%y%b').upper()}{atm_strike}CE"
                 logging.warning(f"Using generated placeholder trading symbol: {trading_symbol}")
 
                 order_id = place_gtt_order(kite, trading_symbol, "BUY", trade_book["quantity"], ce_entry_price, ce_entry_price)
