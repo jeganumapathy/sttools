@@ -4,7 +4,11 @@ import requests
 import sys
 import random
 import math
+import argparse
 import json
+import time
+import joblib
+import numpy as np
 from datetime import date, datetime, timedelta
 from kiteconnect import KiteConnect
 
@@ -22,6 +26,10 @@ headers = {
 # --- Option Greeks Calculation (Black-Scholes) ---
 RISK_FREE_RATE = 0.07  # 7% annual risk-free rate assumption
 MIN_EXPIRY_FOR_STABLE_GREEKS = 0.5 / 365.0  # Half a day in years; avoids Gamma/Vega explosion
+
+# Global flags
+LIVE_TRADING = False
+USE_DUMMY_DATA = False
 
 # --- Configuration ---
 def load_config():
@@ -59,7 +67,6 @@ trade_book = {
     "total_sell_qty": 0,
 }
 
-TEST_MODE = True  # Set to True to use dummy data and random LTPs
 WAIT_TIME = 30  # Time in seconds between each cycle (30 reduced for testing)
 
 def _cdf(x):
@@ -249,7 +256,7 @@ def generate_dummy_data(symbol, expiry_date):
 
 def get_full_option_chain(symbol, expiry_date):
     """Fetches the entire option chain records for a given symbol and expiry."""
-    if TEST_MODE:
+    if USE_DUMMY_DATA:
         return generate_dummy_data(symbol, expiry_date).get('records')
 
     session = requests.Session()
@@ -270,6 +277,33 @@ def get_full_option_chain(symbol, expiry_date):
         logging.error(f"Failed to decode JSON. Response text: {response.text}")
         return None
 
+def extract_features_for_prediction(spot_price, atm_strike, ce_data, pe_data):
+    """Extracts features in the correct order for model prediction."""
+    if not all([spot_price, ce_data, pe_data]):
+        return None
+
+    features = [
+        spot_price,
+        atm_strike,
+        ce_data.get('lastPrice', 0),
+        ce_data.get('impliedVolatility', 0),
+        ce_data.get('openInterest', 0),
+        ce_data.get('pchangeinOpenInterest', 0),
+        ce_data.get('delta', 0),
+        ce_data.get('gamma', 0),
+        ce_data.get('vega', 0),
+        ce_data.get('theta', 0),
+        pe_data.get('lastPrice', 0),
+        pe_data.get('impliedVolatility', 0),
+        pe_data.get('openInterest', 0),
+        pe_data.get('pchangeinOpenInterest', 0),
+        pe_data.get('delta', 0),
+        pe_data.get('gamma', 0),
+        pe_data.get('vega', 0),
+        pe_data.get('theta', 0),
+    ]
+    return np.array(features).reshape(1, -1)
+
 def find_option_data_for_strike(records_data, strike_price):
     """Finds CE and PE data for a specific strike from the option chain data."""
     ce_data = None
@@ -283,9 +317,9 @@ def find_option_data_for_strike(records_data, strike_price):
 
 def place_gtt_order(kite, symbol, trans_type, qty, price, trigger_price):
     """Places a GTT order on Kite."""
-    if TEST_MODE:
-        logging.info(f"🧪 [TEST MODE] GTT Order placed for {qty} {symbol} {trans_type} at {price}. Trigger: {trigger_price}")
-        return "TEST_TRIGGER_ID_123"
+    if not LIVE_TRADING:
+        logging.info(f"🧪 [DRY RUN] GTT Order placed for {qty} {symbol} {trans_type} at {price}. Trigger: {trigger_price}")
+        return "DRY_RUN_ID_123"
 
     try:
         orders = [{
@@ -314,7 +348,7 @@ def place_gtt_order(kite, symbol, trans_type, qty, price, trigger_price):
 # --- Configuration ---
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(message)s')
 
-def trading_cycle(kite, expiry):
+def trading_cycle(kite, expiry, model):
     """Main function for a single trading logic cycle."""
     # 1. Fetch full option chain data once
     records = get_full_option_chain("NIFTY", expiry)
@@ -331,7 +365,7 @@ def trading_cycle(kite, expiry):
         return
 
     # --- Calculate Greeks if not in Test Mode ---
-    if not TEST_MODE:
+    if not USE_DUMMY_DATA:
         time_to_expiry = max((datetime.strptime(expiry, "%d-%b-%Y").date() - date.today()).days, 0) / 365.0
         
         # For CE
@@ -405,11 +439,20 @@ def trading_cycle(kite, expiry):
         pe_oi = atm_pe_data.get('openInterest', 0)
         pe_oi_change_pct = atm_pe_data.get('pchangeinOpenInterest', 0)
 
+        # --- ML Model Prediction ---
+        prediction = None
+        if model:
+            features = extract_features_for_prediction(spot_price, atm_strike, atm_ce_data, atm_pe_data)
+            if features is not None:
+                prediction = model.predict(features)[0]
+                logging.info(f"🤖 ML Model Prediction: {'UP' if prediction == 1 else 'DOWN'}")
+
         # Added OI Change check for stronger signal
-        if entry_price and entry_price < 100 and -0.6 < pe_delta < -0.4 and pe_oi > 50000 and pe_oi_change_pct > 0:
+        # Entry condition now includes ML model prediction
+        if prediction == 0 and entry_price and entry_price < 100 and -0.6 < pe_delta < -0.4 and pe_oi > 50000 and pe_oi_change_pct > 0:
             log_msg = (f"🚨 ENTRY SIGNAL: PE Ask Price({entry_price:.2f}) < 100, "
                        f"Delta({pe_delta:.2f}) is favorable, and OI({pe_oi}) is high. "
-                       f"Placing BUY order.")
+                       f"ML model confirms DOWN trend. Placing BUY order.")
             logging.info(log_msg)
             
             # IMPORTANT: You need a reliable way to get the Kite 'tradingsymbol'.
@@ -434,7 +477,7 @@ def trading_cycle(kite, expiry):
 
 def get_nse_option_info():
     """Gets the list of available expiry dates and strike prices."""
-    if TEST_MODE:
+    if USE_DUMMY_DATA:
         return datetime.now().strftime("%d-%b-%Y")
 
     session = requests.Session()
@@ -460,7 +503,7 @@ def get_nse_option_info():
         return None
     
 
-def ticker_loop(stop_event, kite):
+def ticker_loop(stop_event, kite, model):
     logging.info("Starting ticker loop...")
     nearest_expiry = get_nse_option_info()
     if not nearest_expiry:
@@ -468,10 +511,10 @@ def ticker_loop(stop_event, kite):
         return
 
     while not stop_event.is_set():
-        trading_cycle(kite, nearest_expiry)
+        trading_cycle(kite, nearest_expiry, model)
         # Politeness delay to avoid rate limiting
         logging.info("⏳ Waiting for 30 seconds for the next cycle...")
-        stop_event.wait(TEST_MODE and 1 or WAIT_TIME)
+        stop_event.wait(USE_DUMMY_DATA and 1 or WAIT_TIME)
 
 def kite_input():
         """Handles Kite Connect login and returns a valid kite object."""
@@ -497,20 +540,41 @@ def kite_input():
 
 # --- Execution ---
 if __name__ == "__main__":
+    parser = argparse.ArgumentParser(description="Nifty 50 Trading Bot with ML integration.")
+    parser.add_argument("--live", action="store_true", help="Enable LIVE trading (Real Money). Default is Dry-Run.")
+    parser.add_argument("--dummy-data", action="store_true", help="Use dummy data instead of live NSE/Kite API.")
+    args = parser.parse_args()
+
+    LIVE_TRADING = args.live
+    USE_DUMMY_DATA = args.dummy_data
+
     # --- DISCLAIMER ---
     print("="*80)
     print("⚠️  DISCLAIMER: This is a sample script for educational purposes only.       ⚠️")
     print("⚠️  Automated trading involves significant risk and can lead to financial loss. ⚠️")
     print("⚠️  You are solely responsible for any trades placed by this script.          ⚠️")
+    if not LIVE_TRADING:
+        print("🛡️  DRY RUN MODE: No real trades will be placed.")
+    else:
+        print("🚨  LIVE TRADING ENABLED: Real trades WILL be placed.")
     print("="*80)
+
+    # Load the trained model
+    model = None
+    try:
+        model = joblib.load('trading_model.joblib')
+        logging.info("✅ ML model 'trading_model.joblib' loaded successfully.")
+    except FileNotFoundError:
+        logging.warning("⚠️ ML model 'trading_model.joblib' not found. Running without ML predictions.")
+
     kite = None
-    if not TEST_MODE:
+    if not USE_DUMMY_DATA:
         kite = kite_input()
         if not kite:
             sys.exit("❌ Exiting: Kite login failed.")
 
     stop_event = threading.Event()
-    t = threading.Thread(target=ticker_loop, args=(stop_event, kite))
+    t = threading.Thread(target=ticker_loop, args=(stop_event, kite, model))
     t.start()
 
     try:
