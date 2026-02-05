@@ -375,11 +375,16 @@ logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(message)s')
 
 def trading_cycle(kite, expiry, model, collect_data_file=None):
     """Main function for a single trading logic cycle."""
+    cycle_start_time = time.time()
+
     # 1. Fetch full option chain data once
     records = get_full_option_chain("NIFTY", expiry)
     if not records or 'underlyingValue' not in records:
         logging.warning("Could not fetch valid records from NSE.")
         return
+
+    # Measure Space: Approximate size of the fetched data in KB
+    data_size_kb = sys.getsizeof(str(records)) / 1024
 
     spot_price = records['underlyingValue']
     atm_strike = round(spot_price / 50) * 50
@@ -553,6 +558,8 @@ def trading_cycle(kite, expiry, model, collect_data_file=None):
                         "highest_pnl_pct": 0.0
                     })
                     trade_book["total_buy_qty"] += trade_book["quantity"]
+
+    logging.info(f"⏱️ Cycle Time: {time.time() - cycle_start_time:.4f}s | 📦 Data Size: {data_size_kb:.2f} KB")
 
 def get_nse_option_info():
     """Gets the list of available expiry dates and strike prices."""
