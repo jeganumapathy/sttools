@@ -28,6 +28,7 @@ trade_book = {
     "min_profit_pct": 3,
     "max_profit_pct": 8,
     "stop_loss_pct": 5,  # Stop loss percentage
+    "total_pnl": 0.0,
 }
 
 TEST_MODE = True  # Set to True to use dummy data and random LTPs
@@ -176,7 +177,9 @@ def trading_cycle(kite, expiry):
             # Check for profit target or stop-loss
             if pnl_pct >= trade_book["min_profit_pct"] or pnl_pct <= -trade_book["stop_loss_pct"]:
                 exit_reason = "PROFIT TARGET" if pnl_pct >= 0 else "STOP-LOSS"
-                logging.info(f"💰 {exit_reason} HIT ({pnl_pct:.2f}%). Placing SELL order.")
+                pnl_amount = (current_ltp - trade_book["buy_price"]) * trade_book["quantity"]
+                trade_book["total_pnl"] += pnl_amount
+                logging.info(f"💰 {exit_reason} HIT ({pnl_pct:.2f}%). Realized PnL: {pnl_amount:.2f}. Placing SELL order.")
                 place_gtt_order(kite, trade_book["symbol"], "SELL", trade_book["quantity"], current_ltp, current_ltp)
                 # Reset trade book after selling
                 trade_book.update({"active_trade": False, "symbol": None, "strike": None, "type": None, "buy_price": 0})
@@ -293,4 +296,5 @@ if __name__ == "__main__":
         logging.info("\n🛑 Stopping ticker...")
         stop_event.set()
         t.join()
+        print(f"\n💰 Total Session Profit/Loss: {trade_book['total_pnl']:.2f}")
         logging.info("Exited.")
