@@ -158,7 +158,7 @@ def load_historical_data(csv_path):
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Train ML Model for Trading Bot")
     parser.add_argument("--mode", choices=["dummy", "live", "history"], default="dummy", help="Data source mode")
-    parser.add_argument("--csv", help="Path to CSV file (for history input or live output)")
+    parser.add_argument("--csv", help="Path to CSV file (for history input or live output) example : python train_model.py --mode history --csv nse_training_data.csv")
     parser.add_argument("--samples", type=int, default=2000, help="Number of samples to generate/collect")
     parser.add_argument("--interval", type=int, default=30, help="Interval in seconds for live collection")
     args = parser.parse_args()

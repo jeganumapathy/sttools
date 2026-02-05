@@ -6,6 +6,7 @@ import random
 import math
 import argparse
 import json
+import os
 import time
 import joblib
 import numpy as np
@@ -66,6 +67,8 @@ trade_book = {
     "total_pnl": 0.0,
     "total_buy_qty": 0,
     "total_sell_qty": 0,
+    "prev_features_for_training": None,
+    "prev_spot_for_training": None,
 }
 
 WAIT_TIME = 30  # Time in seconds between each cycle (30 reduced for testing)
@@ -322,6 +325,21 @@ def find_option_data_for_strike(records_data, strike_price):
             break
     return ce_data, pe_data
 
+def save_training_data(filepath, features, label):
+    """Appends a new row of feature data and a label to a CSV file."""
+    feature_names = [
+        'spot_price', 'atm_strike',
+        'ce_ltp', 'ce_iv', 'ce_oi', 'ce_oi_change_pct', 'ce_delta', 'ce_gamma', 'ce_vega', 'ce_theta',
+        'pe_ltp', 'pe_iv', 'pe_oi', 'pe_oi_change_pct', 'pe_delta', 'pe_gamma', 'pe_vega', 'pe_theta'
+    ]
+    df = pd.DataFrame([features], columns=feature_names)
+    df['label'] = label
+    
+    # Append to CSV, write header only if file doesn't exist
+    df.to_csv(filepath, mode='a', header=not os.path.exists(filepath), index=False)
+    logging.info(f"💾 Data point saved to {filepath} (Label: {label})")
+
+
 def place_gtt_order(kite, symbol, trans_type, qty, price, trigger_price):
     """Places a GTT order on Kite."""
     if not LIVE_TRADING:
@@ -355,7 +373,7 @@ def place_gtt_order(kite, symbol, trans_type, qty, price, trigger_price):
 # --- Configuration ---
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(message)s')
 
-def trading_cycle(kite, expiry, model):
+def trading_cycle(kite, expiry, model, collect_data_file=None):
     """Main function for a single trading logic cycle."""
     # 1. Fetch full option chain data once
     records = get_full_option_chain("NIFTY", expiry)
@@ -382,6 +400,39 @@ def trading_cycle(kite, expiry, model):
         # For PE
         pe_iv = atm_pe_data.get('impliedVolatility', 0) / 100 # Convert from %
         atm_pe_data.update(calculate_greeks("PE", spot_price, atm_strike, time_to_expiry, RISK_FREE_RATE, pe_iv))
+
+    # --- Data Collection for Training ---
+    if collect_data_file:
+        current_features = [
+            spot_price,
+            atm_strike,
+            atm_ce_data.get('lastPrice', 0),
+            atm_ce_data.get('impliedVolatility', 0),
+            atm_ce_data.get('openInterest', 0),
+            atm_ce_data.get('pchangeinOpenInterest', 0),
+            atm_ce_data.get('delta', 0),
+            atm_ce_data.get('gamma', 0),
+            atm_ce_data.get('vega', 0),
+            atm_ce_data.get('theta', 0),
+            atm_pe_data.get('lastPrice', 0),
+            atm_pe_data.get('impliedVolatility', 0),
+            atm_pe_data.get('openInterest', 0),
+            atm_pe_data.get('pchangeinOpenInterest', 0),
+            atm_pe_data.get('delta', 0),
+            atm_pe_data.get('gamma', 0),
+            atm_pe_data.get('vega', 0),
+            atm_pe_data.get('theta', 0),
+        ]
+
+        # If we have previous data, we can now determine its label and save it
+        if trade_book["prev_features_for_training"] is not None:
+            prev_spot = trade_book["prev_spot_for_training"]
+            label = 1 if spot_price > prev_spot else 0
+            save_training_data(collect_data_file, trade_book["prev_features_for_training"], label)
+
+        # Store current data for the next iteration
+        trade_book["prev_features_for_training"] = current_features
+        trade_book["prev_spot_for_training"] = spot_price
 
     # --- Display Data ---
     print("\n" + "═" * 80)
@@ -530,7 +581,7 @@ def get_nse_option_info():
         return None
     
 
-def ticker_loop(stop_event, kite, model):
+def ticker_loop(stop_event, kite, model, collect_data_file=None):
     logging.info("Starting ticker loop...")
     nearest_expiry = get_nse_option_info()
     if not nearest_expiry:
@@ -538,7 +589,7 @@ def ticker_loop(stop_event, kite, model):
         return
 
     while not stop_event.is_set():
-        trading_cycle(kite, nearest_expiry, model)
+        trading_cycle(kite, nearest_expiry, model, collect_data_file)
         # Politeness delay to avoid rate limiting
         logging.info("⏳ Waiting for 30 seconds for the next cycle...")
         stop_event.wait(USE_DUMMY_DATA and 1 or WAIT_TIME)
@@ -570,10 +621,12 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Nifty 50 Trading Bot with ML integration.")
     parser.add_argument("--live", action="store_true", help="Enable LIVE trading (Real Money). Default is Dry-Run.")
     parser.add_argument("--dummy-data", action="store_true", help="Use dummy data instead of live NSE/Kite API.")
+    parser.add_argument("--collect-data", type=str, help="Collect training data and save to the specified CSV file.")
     args = parser.parse_args()
 
     LIVE_TRADING = args.live
     USE_DUMMY_DATA = args.dummy_data
+    COLLECT_DATA_FILE = args.collect_data
 
     # --- DISCLAIMER ---
     print("="*80)
@@ -590,6 +643,9 @@ if __name__ == "__main__":
         print("🛡️  DRY RUN MODE: No real trades will be placed.")
     else:
         print("🚨  LIVE TRADING ENABLED: Real trades WILL be placed.")
+
+    if COLLECT_DATA_FILE:
+        print(f"💾  DATA COLLECTION: Data will be saved to '{COLLECT_DATA_FILE}'")
     print("="*80)
 
     # Load the trained model
@@ -607,7 +663,7 @@ if __name__ == "__main__":
             sys.exit("❌ Exiting: Kite login failed.")
 
     stop_event = threading.Event()
-    t = threading.Thread(target=ticker_loop, args=(stop_event, kite, model))
+    t = threading.Thread(target=ticker_loop, args=(stop_event, kite, model, COLLECT_DATA_FILE))
     t.start()
 
     try:
