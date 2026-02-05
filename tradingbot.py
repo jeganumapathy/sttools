@@ -24,11 +24,13 @@ trade_book = {
     "strike": None,
     "type": None,  # "CE" or "PE"
     "buy_price": 0,
-    "quantity": 1,  # Example quantity
+    "quantity": 25,  # Realistic quantity (Nifty lot size)
     "min_profit_pct": 3,
     "max_profit_pct": 8,
     "stop_loss_pct": 5,  # Stop loss percentage
     "total_pnl": 0.0,
+    "total_buy_qty": 0,
+    "total_sell_qty": 0,
 }
 
 TEST_MODE = True  # Set to True to use dummy data and random LTPs
@@ -179,6 +181,7 @@ def trading_cycle(kite, expiry):
                 exit_reason = "PROFIT TARGET" if pnl_pct >= 0 else "STOP-LOSS"
                 pnl_amount = (current_ltp - trade_book["buy_price"]) * trade_book["quantity"]
                 trade_book["total_pnl"] += pnl_amount
+                trade_book["total_sell_qty"] += trade_book["quantity"]
                 logging.info(f"💰 {exit_reason} HIT ({pnl_pct:.2f}%). Realized PnL: {pnl_amount:.2f}. Placing SELL order.")
                 place_gtt_order(kite, trade_book["symbol"], "SELL", trade_book["quantity"], current_ltp, current_ltp)
                 # Reset trade book after selling
@@ -206,6 +209,7 @@ def trading_cycle(kite, expiry):
                     "type": "PE",
                     "buy_price": atm_pe_ltp, # Approximation, ideally get from order execution details
                 })
+                trade_book["total_buy_qty"] += trade_book["quantity"]
 
 def get_nse_option_info():
     """Gets the list of available expiry dates and strike prices."""
@@ -296,5 +300,7 @@ if __name__ == "__main__":
         logging.info("\n🛑 Stopping ticker...")
         stop_event.set()
         t.join()
+        print(f"📊 Total Buy Quantity: {trade_book['total_buy_qty']}")
+        print(f"📊 Total Sell Quantity: {trade_book['total_sell_qty']}")
         print(f"\n💰 Total Session Profit/Loss: {trade_book['total_pnl']:.2f}")
         logging.info("Exited.")
