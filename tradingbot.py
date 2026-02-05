@@ -621,7 +621,7 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Nifty 50 Trading Bot with ML integration.")
     parser.add_argument("--live", action="store_true", help="Enable LIVE trading (Real Money). Default is Dry-Run.")
     parser.add_argument("--dummy-data", action="store_true", help="Use dummy data instead of live NSE/Kite API.")
-    parser.add_argument("--collect-data", type=str, help="Collect training data and save to the specified CSV file.")
+    parser.add_argument("--collect-data", type=str, help="Collect training data and save to the specified CSV file. python tradingbot.py --collect-data nse_training_data.csv")
     args = parser.parse_args()
 
     LIVE_TRADING = args.live
