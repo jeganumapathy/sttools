@@ -456,31 +456,51 @@ def trading_cycle(kite, expiry, model):
 
         # Added OI Change check for stronger signal
         # Entry condition now includes ML model prediction
-        if prediction == 0 and entry_price and entry_price < 100 and -0.6 < pe_delta < -0.4 and pe_oi > 50000 and pe_oi_change_pct > 0:
-            log_msg = (f"🚨 ENTRY SIGNAL: PE Ask Price({entry_price:.2f}) < 100, "
-                       f"Delta({pe_delta:.2f}) is favorable, and OI({pe_oi}) is high. "
-                       f"ML model confirms DOWN trend. Placing BUY order.")
-            logging.info(log_msg)
-            
-            # IMPORTANT: You need a reliable way to get the Kite 'tradingsymbol'.
-            # The NSE 'identifier' is different. A robust solution uses the Kite instrument dump.
-            # This is a placeholder and will likely fail if the expiry/strike changes.
-            trading_symbol = f"NFO:NIFTY{datetime.strptime(expiry, '%d-%b-%Y').strftime('%y%b').upper()}{atm_strike}PE"
-            logging.warning(f"Using generated placeholder trading symbol: {trading_symbol}")
+        if prediction == 0: # --- BEARISH SIGNAL: BUY PE ---
+            if entry_price and entry_price < 100 and -0.6 < pe_delta < -0.4 and pe_oi > 50000 and pe_oi_change_pct > 0:
+                log_msg = (f"🚨 BEARISH ENTRY SIGNAL: PE Ask Price({entry_price:.2f}) < 100, "
+                           f"Delta({pe_delta:.2f}) is favorable, and OI({pe_oi}) is high. "
+                           f"ML model confirms DOWN trend. Placing BUY order for PE.")
+                logging.info(log_msg)
+                
+                trading_symbol = f"NFO:NIFTY{datetime.strptime(expiry, '%d-%b-%Y').strftime('%y%b').upper()}{atm_strike}PE"
+                logging.warning(f"Using generated placeholder trading symbol: {trading_symbol}")
 
-            # Place order at the ask price to ensure execution
-            order_id = place_gtt_order(kite, trading_symbol, "BUY", trade_book["quantity"], entry_price, entry_price)
-            if order_id:
-                # Update trade book with the new position
-                trade_book.update({
-                    "active_trade": True,
-                    "symbol": trading_symbol,
-                    "strike": atm_strike,
-                    "type": "PE",
-                    "buy_price": entry_price,  # Use the ask price as the buy price for accurate PnL,
-                    "highest_pnl_pct": 0.0
-                })
-                trade_book["total_buy_qty"] += trade_book["quantity"]
+                order_id = place_gtt_order(kite, trading_symbol, "BUY", trade_book["quantity"], entry_price, entry_price)
+                if order_id:
+                    trade_book.update({
+                        "active_trade": True, "symbol": trading_symbol, "strike": atm_strike,
+                        "type": "PE", "buy_price": entry_price, "highest_pnl_pct": 0.0
+                    })
+                    trade_book["total_buy_qty"] += trade_book["quantity"]
+
+        elif prediction == 1: # --- BULLISH SIGNAL: BUY CE ---
+            ce_entry_price = atm_ce_data.get('sellPrice1')
+            ce_delta = atm_ce_data.get('delta', 0)
+            ce_oi = atm_ce_data.get('openInterest', 0)
+            ce_oi_change_pct = atm_ce_data.get('pchangeinOpenInterest', 0)
+
+            # Define your entry conditions for a CE trade here
+            if ce_entry_price and ce_entry_price < 100 and 0.4 < ce_delta < 0.6 and ce_oi > 50000 and ce_oi_change_pct > 0:
+                log_msg = (f"🚨 BULLISH ENTRY SIGNAL: CE Ask Price({ce_entry_price:.2f}) < 100, "
+                           f"Delta({ce_delta:.2f}) is favorable, and OI({ce_oi}) is high. "
+                           f"ML model confirms UP trend. Placing BUY order for CE.")
+                logging.info(log_msg)
+
+                trading_symbol = f"NFO:NIFTY{datetime.strptime(expiry, '%d-%b-%Y').strftime('%y%b').upper()}{atm_strike}CE"
+                logging.warning(f"Using generated placeholder trading symbol: {trading_symbol}")
+
+                order_id = place_gtt_order(kite, trading_symbol, "BUY", trade_book["quantity"], ce_entry_price, ce_entry_price)
+                if order_id:
+                    trade_book.update({
+                        "active_trade": True,
+                        "symbol": trading_symbol,
+                        "strike": atm_strike,
+                        "type": "CE",
+                        "buy_price": ce_entry_price,
+                        "highest_pnl_pct": 0.0
+                    })
+                    trade_book["total_buy_qty"] += trade_book["quantity"]
 
 def get_nse_option_info():
     """Gets the list of available expiry dates and strike prices."""
