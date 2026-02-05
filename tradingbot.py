@@ -4,7 +4,7 @@ import requests
 import sys
 import random
 import math
-from datetime import date, datetime
+from datetime import date, datetime, timedelta
 from kiteconnect import KiteConnect
 
 
@@ -20,6 +20,7 @@ headers = {
 
 # --- Option Greeks Calculation (Black-Scholes) ---
 RISK_FREE_RATE = 0.07  # 7% annual risk-free rate assumption
+MIN_EXPIRY_FOR_STABLE_GREEKS = 0.5 / 365.0  # Half a day in years; avoids Gamma explosion
 
 # --- Trade State Management ---
 trade_book = {
@@ -38,7 +39,7 @@ trade_book = {
 }
 
 TEST_MODE = True  # Set to True to use dummy data and random LTPs
-WAIT_TIME = 1  # Time in seconds between each cycle (30 reduced for testing)
+WAIT_TIME = 30  # Time in seconds between each cycle (30 reduced for testing)
 
 def _cdf(x):
     'Cumulative distribution function for the standard normal distribution'
@@ -53,8 +54,18 @@ def calculate_greeks(option_type, S, K, T, r, sigma):
     if T <= 0 or sigma <= 0 or S <= 0: # Avoid math domain errors
         return {'delta': 0, 'gamma': 0, 'theta': 0, 'vega': 0}
 
-    d1 = (math.log(S / K) + (r + 0.5 * sigma ** 2) * T) / (sigma * math.sqrt(T))
-    d2 = d1 - sigma * math.sqrt(T)
+    # Pre-calculate to avoid ZeroDivisionError and for reuse
+    vol_sqrt_t = sigma * math.sqrt(T)
+    if vol_sqrt_t == 0:
+        # Simplified delta for expiry, other greeks are irrelevant
+        if option_type.upper() == "CE":
+            delta = 1.0 if S > K else 0.0
+        else:  # PE
+            delta = -1.0 if S < K else 0.0
+        return {'delta': delta, 'gamma': 0, 'theta': 0, 'vega': 0}
+
+    d1 = (math.log(S / K) + (r + 0.5 * sigma ** 2) * T) / vol_sqrt_t
+    d2 = d1 - vol_sqrt_t
     
     pdf_d1 = (1 / (math.sqrt(2 * math.pi))) * math.exp(-d1**2 / 2)
 
@@ -67,9 +78,14 @@ def calculate_greeks(option_type, S, K, T, r, sigma):
     else:
         return {}
 
-    gamma = pdf_d1 / (S * sigma * math.sqrt(T))
+    gamma = pdf_d1 / (S * vol_sqrt_t)
     vega = S * pdf_d1 * math.sqrt(T)
     
+    # Mitigate Gamma/Theta explosion near expiry by neutralizing them.
+    if T < MIN_EXPIRY_FOR_STABLE_GREEKS:
+        gamma = 0
+        theta = 0
+
     # Return Theta per day and Vega for a 1% change in IV
     return {'delta': delta, 'gamma': gamma, 'theta': theta / 365, 'vega': vega / 100}
 
@@ -102,8 +118,8 @@ def generate_dummy_data(symbol, expiry_date):
     pe_tot_oi = 0
     pe_tot_vol = 0
 
-    # Generate strikes around ATM
-    for i in range(-10, 11):
+    # Generate strikes around ATM (Expanded range for realism)
+    for i in range(-20, 21):
         strike = atm_strike + (i * 50)
         # Simulate option pricing (intrinsic + time value + noise)
         ce_intrinsic = max(0, spot_price - strike)
@@ -178,14 +194,23 @@ def generate_dummy_data(symbol, expiry_date):
             "PE": {"lastPrice": round(pe_ltp, 2), "openInterest": pe_oi,
                    "impliedVolatility": round(pe_iv * 100, 2), **pe_greeks, **common_pe}
         })
+
+    # Generate dummy future expiry dates
+    expiry_dates_list = [expiry_date]
+    try:
+        dt = datetime.strptime(expiry_date, "%d-%b-%Y")
+        for i in range(1, 5):
+            expiry_dates_list.append((dt + timedelta(weeks=i)).strftime("%d-%b-%Y"))
+    except ValueError:
+        pass
         
     return {
         "records": {
             "underlyingValue": round(spot_price, 2),
-            "expiryDates": [expiry_date],
+            "expiryDates": expiry_dates_list,
             "data": data,
             "timestamp": datetime.now().strftime("%d-%b-%Y %H:%M:%S"),
-            "strikePrices": strike_prices
+            "strikePrices": [str(s) for s in strike_prices]
         },
         "filtered": {
             "data": data,
@@ -316,32 +341,37 @@ def trading_cycle(kite, expiry):
         if not held_option_data:
             logging.warning(f"Could not find data for held strike {held_strike}. Skipping exit check.")
             return
-        current_ltp = held_option_data.get('lastPrice')
+        
+        # For realistic PnL, use bid price for selling to account for slippage
+        exit_price = held_option_data.get('buyPrice1')
 
-        if current_ltp is not None and trade_book["buy_price"] > 0:
-            pnl_pct = ((current_ltp - trade_book["buy_price"]) / trade_book["buy_price"]) * 100
-            print(f"ℹ️  Holding {trade_book['symbol']}. Buy: {trade_book['buy_price']}, LTP: {current_ltp}, PnL: {pnl_pct:.2f}%")
+        if exit_price is not None and trade_book["buy_price"] > 0:
+            pnl_pct = ((exit_price - trade_book["buy_price"]) / trade_book["buy_price"]) * 100
+            print(f"ℹ️  Holding {trade_book['symbol']}. Buy: {trade_book['buy_price']:.2f}, Bid: {exit_price:.2f}, PnL: {pnl_pct:.2f}%")
 
             # Check for profit target or stop-loss
             if pnl_pct >= trade_book["min_profit_pct"] or pnl_pct <= -trade_book["stop_loss_pct"]:
                 exit_reason = "PROFIT TARGET" if pnl_pct >= 0 else "STOP-LOSS"
-                pnl_amount = (current_ltp - trade_book["buy_price"]) * trade_book["quantity"]
+                # Calculate PnL based on the actual executable price (bid price)
+                pnl_amount = (exit_price - trade_book["buy_price"]) * trade_book["quantity"]
                 trade_book["total_pnl"] += pnl_amount
                 trade_book["total_sell_qty"] += trade_book["quantity"]
                 logging.info(f"💰 {exit_reason} HIT ({pnl_pct:.2f}%). Realized PnL: {pnl_amount:.2f}. Placing SELL order.")
-                place_gtt_order(kite, trade_book["symbol"], "SELL", trade_book["quantity"], current_ltp, current_ltp)
+                # Exit at the market bid price
+                place_gtt_order(kite, trade_book["symbol"], "SELL", trade_book["quantity"], exit_price, exit_price)
                 # Reset trade book after selling
                 trade_book.update({"active_trade": False, "symbol": None, "strike": None, "type": None, "buy_price": 0})
     else:
         # --- ENTRY LOGIC ---
         # Example Strategy: Buy ATM PE if LTP < 100, Delta is between -0.4 and -0.6, and OI > 50k.
         # DO NOT USE THIS IN LIVE TRADING.
-        atm_pe_ltp = atm_pe_data.get('lastPrice')
+        # To account for slippage, we check the ask price for entry
+        entry_price = atm_pe_data.get('sellPrice1')
         pe_delta = atm_pe_data.get('delta', 0)
         pe_oi = atm_pe_data.get('openInterest', 0)
 
-        if atm_pe_ltp and atm_pe_ltp < 100 and -0.6 < pe_delta < -0.4 and pe_oi > 50000:
-            log_msg = (f"🚨 ENTRY SIGNAL: PE LTP({atm_pe_ltp}) < 100, "
+        if entry_price and entry_price < 100 and -0.6 < pe_delta < -0.4 and pe_oi > 50000:
+            log_msg = (f"🚨 ENTRY SIGNAL: PE Ask Price({entry_price:.2f}) < 100, "
                        f"Delta({pe_delta:.2f}) is favorable, and OI({pe_oi}) is high. "
                        f"Placing BUY order.")
             logging.info(log_msg)
@@ -352,7 +382,8 @@ def trading_cycle(kite, expiry):
             trading_symbol = f"NFO:NIFTY{datetime.strptime(expiry, '%d-%b-%Y').strftime('%y%b').upper()}{atm_strike}PE"
             logging.warning(f"Using generated placeholder trading symbol: {trading_symbol}")
 
-            order_id = place_gtt_order(kite, trading_symbol, "BUY", trade_book["quantity"], atm_pe_ltp, atm_pe_ltp)
+            # Place order at the ask price to ensure execution
+            order_id = place_gtt_order(kite, trading_symbol, "BUY", trade_book["quantity"], entry_price, entry_price)
             if order_id:
                 # Update trade book with the new position
                 trade_book.update({
@@ -360,7 +391,7 @@ def trading_cycle(kite, expiry):
                     "symbol": trading_symbol,
                     "strike": atm_strike,
                     "type": "PE",
-                    "buy_price": atm_pe_ltp,  # Approximation, ideally get from order execution details
+                    "buy_price": entry_price,  # Use the ask price as the buy price for accurate PnL
                 })
                 trade_book["total_buy_qty"] += trade_book["quantity"]
 
@@ -403,7 +434,7 @@ def ticker_loop(stop_event, kite):
         trading_cycle(kite, nearest_expiry)
         # Politeness delay to avoid rate limiting
         logging.info("⏳ Waiting for 30 seconds for the next cycle...")
-        stop_event.wait(WAIT_TIME)
+        stop_event.wait(TEST_MODE and 1 or WAIT_TIME)
 
 def kite_input():
         """Handles Kite Connect login and returns a valid kite object."""
